@@ -1,6 +1,6 @@
 
-//% color=#007F00 icon="\uf17b" block="callibot_x22" weight=29
-namespace callibot
+//% color=#007F00 icon="\uf17b" block="i2ccallibot" weight=29
+namespace callibotx22
 /* 231024
 
 https://github.com/knotechgmbh
@@ -36,7 +36,7 @@ PWM rechts (0..255) von Motor 2
         GET_LINE_SEN_VALUE = 0x84 // Spursensoren links / rechts Werte (5 Byte 2x16 Bit)
     }
 
-
+/* 
 
     let n_i2cCheck: boolean = false // i2c-Check
     let n_i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
@@ -138,5 +138,5 @@ PWM rechts (0..255) von Motor 2
             return pins.i2cReadBuffer(pADDR, size, repeat)
         else
             return Buffer.create(size)
-    }
+    } */
 }// callibot.ts

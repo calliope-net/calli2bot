@@ -1,5 +1,5 @@
 {
-    "name": "callibot",
+    "name": "i2c_callibot",
     "description": "",
     "dependencies": {
         "core": "*"
@@ -20,5 +20,5 @@
     "supportedTargets": [
         "calliopemini"
     ],
-    "preferredEditor": "tsprj"
+    "preferredEditor": "blocksprj"
 }
