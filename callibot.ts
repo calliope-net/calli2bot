@@ -50,7 +50,7 @@ PWM rechts (0..255) von Motor 2
         //readRegister(pADDR, eCommandByte.CONFIGURATION)
     }
 
-    // ========== group="i2c Register lesen"
+    // ========== group="INPUT digital 6 Bit"
 
 
 
@@ -60,7 +60,7 @@ PWM rechts (0..255) von Motor 2
     //% size.min=1 size.max=10 size.defl=1
     //% blockSetVariable=digital
     export function readINPUTS(): number {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUTS]))
+        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUTS]), true)
         return i2cReadBuffer(eADDR.CB2_x22, 1).getUint8(0)
     }
 
@@ -87,7 +87,6 @@ PWM rechts (0..255) von Motor 2
         off //= 0b00100000
     }
 
-
     //% group="INPUT digital 6 Bit"
     //% block="auswerten %digital %pINPUTS" weight=7
     export function bitINPUTS(digital: number, pINPUTS: eINPUTS) {
@@ -106,23 +105,59 @@ PWM rechts (0..255) von Motor 2
         }
     }
 
-    //% group="i2c Register lesen"
-    //% block="Ultraschallsensor mm" weight=7
-    //% pRegister.defl=callibot.eRegister.GET_INPUTS
-    //% size.min=1 size.max=10 size.defl=1
+    // ========== group="INPUT Ultraschallsensor 16 Bit (mm)"
+
+    //% group="INPUT Ultraschallsensor 16 Bit (mm)"
+    //% block="Ultraschallsensor lesen"
     //% blockSetVariable=entfernung
     export function readINPUT_US(): number {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUT_US]))
+        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUT_US]), true)
         return i2cReadBuffer(eADDR.CB2_x22, 3).getNumber(NumberFormat.UInt16LE, 1)
     }
 
+    // ========== group="INPUT Spursensoren 2*16 Bit [r,l]"
+
+    //% group="INPUT Spursensoren 2*16 Bit [r,l]"
+    //% block="Spursensoren lesen" weight=4
+    //% blockSetVariable=spursensoren
+    export function readLINE_SEN_VALUE(): number[] {
+        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_LINE_SEN_VALUE]), true)
+        return i2cReadBuffer(eADDR.CB2_x22, 5).slice(1, 4).toArray(NumberFormat.UInt16LE)
+    }
+
+    export enum eRL {
+        //%block="Spursensor rechts"
+        rechts = 0,
+        //%block="Spursensor links"
+        links = 1
+    }
+    export enum eVergleich {
+        //%block=">"
+        gt,
+        //%block="<"
+        lt
+    }
+
+    //% group="INPUT Spursensoren 2*16 Bit [r,l]"
+    //% block="auswerten %sensoren %pRL %pVergleich %vergleich" weight=2
+    //% inlineInputMode=inline
+    export function getLINE_SEN_VALUE(sensoren: number[], pRL: eRL, pVergleich: eVergleich, vergleich: number) {
+        let sensor = sensoren.get(pRL)
+        switch (pVergleich) {
+            case eVergleich.gt: return sensor > vergleich
+            case eVergleich.lt: return sensor < vergleich
+            default: return false
+        }
+    }
+
+
+    // ========== advanced=true
+
     export enum eVersion { Typ, Firmware, Seriennummer }
-    //% group="i2c Register lesen"
+    //% group="i2c Register lesen" advanced=true
     //% block="Version %pVersion HEX" weight=6
-    //% pRegister.defl=callibot.eRegister.GET_INPUTS
-    //% size.min=1 size.max=10 size.defl=1
     export function readFW_VERSION(pVersion: eVersion) {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_FW_VERSION]))
+        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_FW_VERSION]), true)
         switch (pVersion) {
             case eVersion.Typ: { return i2cReadBuffer(eADDR.CB2_x22, 2).slice(1, 1).toHex() }
             case eVersion.Firmware: { return i2cReadBuffer(eADDR.CB2_x22, 6).slice(2, 4).toHex() }
@@ -131,31 +166,19 @@ PWM rechts (0..255) von Motor 2
         }
     }
 
-    //% group="i2c Register lesen"
+    //% group="i2c Register lesen" advanced=true
     //% block="Versorgungsspannung mV" weight=5
-    //% pRegister.defl=callibot.eRegister.GET_INPUTS
-    //% size.min=1 size.max=10 size.defl=1
     export function readPOWER(): number {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_POWER]))
+        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_POWER]), true)
         return i2cReadBuffer(eADDR.CB2_x22, 3).getNumber(NumberFormat.UInt16LE, 1)
     }
 
-    //% group="i2c Register lesen"
-    //% block="Spursensoren [r,l]" weight=4
-    //% pRegister.defl=callibot.eRegister.GET_INPUTS
-    //% size.min=1 size.max=10 size.defl=1
-    //% blockSetVariable=spursensoren
-    export function readLINE_SEN_VALUE(): number[] {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_LINE_SEN_VALUE]))
-        return i2cReadBuffer(eADDR.CB2_x22, 5).slice(1, 4).toArray(NumberFormat.UInt16LE)
-    }
-
-    //% group="i2c Register lesen"
+    //% group="i2c Register lesen" advanced=true
     //% block="readRegister %pRegister size %size" weight=2
     //% pRegister.defl=calli2bot.eRegister.GET_INPUTS
     //% size.min=1 size.max=10 size.defl=1
     export function readRegister(pRegister: eRegister, size: number): Buffer {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([pRegister]))
+        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([pRegister]), true)
         return i2cReadBuffer(eADDR.CB2_x22, size)
     }
 
