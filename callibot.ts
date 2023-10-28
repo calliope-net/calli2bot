@@ -9,7 +9,7 @@ https://github.com/MKleinSB/pxt-callibot
 
 */ {
     export enum eADDR {
-        CB2_x22 = 0x22, WR_MOTOR_x20 = 0x20, WR_LED_x21 = 0x21, RD_SENSOR_x21
+        CB2_x22 = 0x22//, WR_MOTOR_x20 = 0x20, WR_LED_x21 = 0x21, RD_SENSOR_x21
         /*
         Ab CalliBot2 wird über Register gearbeitet. D.h. Es wird immer mindestens ein Byte geschrieben, 
         welches das Register auswählt. Ein folgendes READ fragt dann dieses Register ab.
@@ -38,21 +38,50 @@ PWM rechts (0..255) von Motor 2
     }
 
 
-
-    let n_i2cCheck: boolean = false // i2c-Check
-    let n_i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
-
+    /* 
+        let n_i2cCheck: boolean = false // i2c-Check
+        let n_i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
+     */
     //% group="beim Start"
     //% block="i2c %pADDR beim Start || i2c-Check %ck" weight=4
     //% ck.shadow="toggleOnOff" ck.defl=1
     //% blockSetVariable=Calli2bot
-    export function beimStart(pADDR: eADDR, ck?: boolean) {
-        n_i2cCheck = (ck ? true : false) // optionaler boolean Parameter kann undefined sein
-        n_i2cError = 0 // Reset Fehlercode
+    export function beimStart(pADDR: eADDR, ck?: boolean): calli2bot.Calli2bot {
+        //n_i2cCheck = (ck ? true : false) // optionaler boolean Parameter kann undefined sein
+        //n_i2cError = 0 // Reset Fehlercode
         //readRegister(pADDR, eCommandByte.CONFIGURATION)
         //let x=   Digital.prototype
-        return new Calli2bot(pADDR)
+        let o = new calli2bot.Calli2bot(pADDR, (ck ? true : false)) // optionaler boolean Parameter kann undefined sein
+        o.i2cRESET_OUTPUTS()
+        return o
     }
+
+
+
+    export enum eRgbLed {
+        //% block="links vorne"
+        LV,
+        //% block="rechts vorne"
+        RV,
+        //% block="links hinten"
+        LH,
+        //% block="rechts hinten"
+        RH,
+        //% block="alle"
+        All
+    }
+
+    enum eRgbColor {
+        red = 0xff0000,
+        green = 0x00ff00,
+        blue = 0x0000ff,
+        yellow = 0xffff00,
+        violett = 0xa300ff,
+        aqua = 0x00ffdc,
+        white = 0xffffff,
+        black = 0x000000
+    }
+
 
     // ========== group="INPUT digital 6 Bit"
 
@@ -64,62 +93,62 @@ PWM rechts (0..255) von Motor 2
 
     // ========== group="INPUT Spursensoren 2*16 Bit [r,l]"
 
-  
+
 
 
     // ========== advanced=true
-
-    //export enum eVersion { Typ, Firmware, Seriennummer }
-    //% group="i2c Register lesen" advanced=true
-    //% block="Version %pVersion HEX" weight=6
-     function readFW_VERSION(pVersion: eVersion) {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_FW_VERSION]), true)
-        switch (pVersion) {
-            case eVersion.Typ: { return i2cReadBuffer(eADDR.CB2_x22, 2).slice(1, 1).toHex() }
-            case eVersion.Firmware: { return i2cReadBuffer(eADDR.CB2_x22, 6).slice(2, 4).toHex() }
-            case eVersion.Seriennummer: { return i2cReadBuffer(eADDR.CB2_x22, 10).slice(6, 4).toHex() }
-            default: { return i2cReadBuffer(eADDR.CB2_x22, 10).toHex() }
+    /* 
+        //export enum eVersion { Typ, Firmware, Seriennummer }
+        //% group="i2c Register lesen" advanced=true
+        //% block="Version %pVersion HEX" weight=6
+         function readFW_VERSION(pVersion: eVersion) {
+            i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_FW_VERSION]), true)
+            switch (pVersion) {
+                case eVersion.Typ: { return i2cReadBuffer(eADDR.CB2_x22, 2).slice(1, 1).toHex() }
+                case eVersion.Firmware: { return i2cReadBuffer(eADDR.CB2_x22, 6).slice(2, 4).toHex() }
+                case eVersion.Seriennummer: { return i2cReadBuffer(eADDR.CB2_x22, 10).slice(6, 4).toHex() }
+                default: { return i2cReadBuffer(eADDR.CB2_x22, 10).toHex() }
+            }
         }
-    }
-
-    //% group="i2c Register lesen" advanced=true
-    //% block="Versorgungsspannung mV" weight=5
-     function readPOWER(): number {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_POWER]), true)
-        return i2cReadBuffer(eADDR.CB2_x22, 3).getNumber(NumberFormat.UInt16LE, 1)
-    }
-
-    //% group="i2c Register lesen" advanced=true
-    //% block="readRegister %pRegister size %size" weight=2
-    //% pRegister.defl=calli2bot.eRegister.GET_INPUTS
-    //% size.min=1 size.max=10 size.defl=1
-     function readRegister(pRegister: eRegister, size: number): Buffer {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([pRegister]), true)
-        return i2cReadBuffer(eADDR.CB2_x22, size)
-    }
-
+    
+        //% group="i2c Register lesen" advanced=true
+        //% block="Versorgungsspannung mV" weight=5
+         function readPOWER(): number {
+            i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_POWER]), true)
+            return i2cReadBuffer(eADDR.CB2_x22, 3).getNumber(NumberFormat.UInt16LE, 1)
+        }
+    
+        //% group="i2c Register lesen" advanced=true
+        //% block="readRegister %pRegister size %size" weight=2
+        //% pRegister.defl=calli2bot.eRegister.GET_INPUTS
+        //% size.min=1 size.max=10 size.defl=1
+         function readRegister(pRegister: eRegister, size: number): Buffer {
+            i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([pRegister]), true)
+            return i2cReadBuffer(eADDR.CB2_x22, size)
+        }
+     */
 
     // ========== advanced=true
 
-
-    //% group="i2c Adressen" advanced=true
-    //% block="i2c Fehlercode" weight=2
-    export function i2cError() { return n_i2cError }
-
-    export function i2cWriteBuffer(pADDR: number, buf: Buffer, repeat: boolean = false) {
-        if (n_i2cError == 0) { // vorher kein Fehler
-            n_i2cError = pins.i2cWriteBuffer(pADDR, buf, repeat)
-            if (n_i2cCheck && n_i2cError != 0)  // vorher kein Fehler, wenn (n_i2cCheck=true): beim 1. Fehler anzeigen
-                basic.showString(Buffer.fromArray([pADDR]).toHex()) // zeige fehlerhafte i2c-Adresse als HEX
-        } else if (!n_i2cCheck)  // vorher Fehler, aber ignorieren (n_i2cCheck=false): i2c weiter versuchen
-            n_i2cError = pins.i2cWriteBuffer(pADDR, buf, repeat)
-        //else { } // n_i2cCheck=true und n_i2cError != 0: weitere i2c Aufrufe blockieren
-    }
-
-    export function i2cReadBuffer(pADDR: number, size: number, repeat: boolean = false): Buffer {
-        if (!n_i2cCheck || n_i2cError == 0)
-            return pins.i2cReadBuffer(pADDR, size, repeat)
-        else
-            return Buffer.create(size)
-    }
+    /* 
+        // group="i2c Adressen" advanced=true
+        // block="i2c Fehlercode" weight=2
+        export function i2cError() { return n_i2cError }
+    
+        export function i2cWriteBuffer(pADDR: number, buf: Buffer, repeat: boolean = false) {
+            if (n_i2cError == 0) { // vorher kein Fehler
+                n_i2cError = pins.i2cWriteBuffer(pADDR, buf, repeat)
+                if (n_i2cCheck && n_i2cError != 0)  // vorher kein Fehler, wenn (n_i2cCheck=true): beim 1. Fehler anzeigen
+                    basic.showString(Buffer.fromArray([pADDR]).toHex()) // zeige fehlerhafte i2c-Adresse als HEX
+            } else if (!n_i2cCheck)  // vorher Fehler, aber ignorieren (n_i2cCheck=false): i2c weiter versuchen
+                n_i2cError = pins.i2cWriteBuffer(pADDR, buf, repeat)
+            //else { } // n_i2cCheck=true und n_i2cError != 0: weitere i2c Aufrufe blockieren
+        }
+    
+        export function i2cReadBuffer(pADDR: number, size: number, repeat: boolean = false): Buffer {
+            if (!n_i2cCheck || n_i2cError == 0)
+                return pins.i2cReadBuffer(pADDR, size, repeat)
+            else
+                return Buffer.create(size)
+        } */
 }// callibot.ts

@@ -2,24 +2,33 @@
 namespace calli2bot {
     export class Calli2bot {
         private readonly i2cADDR: eADDR
-        private i2cCheck: boolean = false // i2c-Check
+        private readonly i2cCheck: boolean // i2c-Check
         private i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
 
         private in_Digital: number
         private in_Ultraschallsensor: number
         private in_Spursensoren: number[]
 
-        constructor(pADDR: eADDR) { this.i2cADDR = pADDR }
+        constructor(pADDR: eADDR, ck: boolean) {
+            this.i2cADDR = pADDR
+            this.i2cCheck = ck
+            this.i2cError = 0 // Reset Fehlercode
+        }
+
+        //% group="beim Start" advanced=true
+        //% block="%Calli2bot RESET_OUTPUTS" weight=2
+        i2cRESET_OUTPUTS() {
+            this.i2cWriteBuffer(Buffer.fromArray([eRegister.RESET_OUTPUTS]))
+        }
 
         // ========== group="INPUT digital 6 Bit"
 
         //% group="INPUT digital 6 Bit"
         //% block="neu einlesen %Calli2bot Digitaleingänge" weight=6
         i2cReadINPUTS() {
-            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_INPUTS]), true)
+            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_INPUTS]))
             this.in_Digital = this.i2cReadBuffer(1).getUint8(0)
         }
-
 
         //% group="INPUT digital 6 Bit"
         //% block="%Calli2bot %pINPUTS" weight=2
@@ -45,11 +54,9 @@ namespace calli2bot {
         //% group="INPUT Ultraschallsensor 16 Bit (mm)"
         //% block="neu einlesen %Calli2bot Ultraschallsensor" weight=6
         i2cReadINPUT_US() {
-            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_INPUT_US]), true)
+            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_INPUT_US]))
             this.in_Ultraschallsensor = this.i2cReadBuffer(3).getNumber(NumberFormat.UInt16LE, 1)
         }
-
-
 
         //% group="INPUT Ultraschallsensor 16 Bit (mm)"
         //% block="%Calli2bot Entfernung %pVergleich %vergleich" weight=2
@@ -66,7 +73,7 @@ namespace calli2bot {
         //% group="INPUT Spursensoren 2*16 Bit [r,l]"
         //% block="neu einlesen %Calli2bot Spursensoren" weight=6
         i2cReadLINE_SEN_VALUE() {
-            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_LINE_SEN_VALUE]), true)
+            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_LINE_SEN_VALUE]))
             this.in_Spursensoren = this.i2cReadBuffer(5).slice(1, 4).toArray(NumberFormat.UInt16LE)
         }
 
@@ -81,6 +88,62 @@ namespace calli2bot {
                 default: return false
             }
         }
+
+
+
+        // ========== subcategory="LED"
+
+        setRGB() {
+
+        }
+
+        //% group="RGB LED" subcategory="LED"
+        //% block="%Calli2bot V2 Schalte Beleuchtung $led rot $red grün $green blau $blue"
+        //% red.min=0 red.max=16
+        //% green.min=0 green.max=16
+        //% blue.min=0 blue.max=16
+        //% inlineInputMode=inline
+        setRgbLed(led: eRgbLed, red: number, green: number, blue: number) {
+            let index = 0;
+            let buffer = pins.createBuffer(5)
+            //init()
+            if (led != eRgbLed.All) {
+                switch (led) {
+                    case eRgbLed.LH:
+                        index = 2;
+                        break;
+                    case eRgbLed.RH:
+                        index = 3;
+                        break;
+                    case eRgbLed.LV:
+                        index = 1;
+                        break;
+                    case eRgbLed.RV:
+                        index = 4;
+                        break;
+
+                }
+                buffer[0] = 0x03;
+                buffer[1] = index;
+                buffer[2] = red;
+                buffer[3] = green;
+                buffer[4] = blue;
+                this.i2cWriteBuffer(buffer);
+            }
+            else { // all leds, repeat 4 times
+                for (index = 1; index < 5; index++) {
+                    buffer[0] = 0x03;
+                    buffer[1] = index;
+                    buffer[2] = red;
+                    buffer[3] = green;
+                    buffer[4] = blue;
+                    this.i2cWriteBuffer(buffer);
+                }
+            }
+        }
+
+
+        // ========== advanced=true
 
         // ========== group="gespeicherte Werte lesen" advanced=true
 
@@ -102,7 +165,7 @@ namespace calli2bot {
         //% group="i2c Register lesen" advanced=true
         //% block="%Calli2bot Version %pVersion HEX" weight=6
         i2cReadFW_VERSION(pVersion: eVersion) {
-            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_FW_VERSION]), true)
+            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_FW_VERSION]))
             switch (pVersion) {
                 case eVersion.Typ: { return this.i2cReadBuffer(2).slice(1, 1).toHex() }
                 case eVersion.Firmware: { return this.i2cReadBuffer(6).slice(2, 4).toHex() }
@@ -114,7 +177,7 @@ namespace calli2bot {
         //% group="i2c Register lesen" advanced=true
         //% block="%Calli2bot Versorgungsspannung mV" weight=4
         i2cReadPOWER(): number {
-            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_POWER]), true)
+            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_POWER]))
             return this.i2cReadBuffer(3).getNumber(NumberFormat.UInt16LE, 1)
         }
 
@@ -123,35 +186,33 @@ namespace calli2bot {
         //% pRegister.defl=calli2bot.eRegister.GET_INPUTS
         //% size.min=1 size.max=10 size.defl=1
         i2cReadRegister(pRegister: eRegister, size: number): Buffer {
-            this.i2cWriteBuffer(Buffer.fromArray([pRegister]), true)
+            this.i2cWriteBuffer(Buffer.fromArray([pRegister]))
             return this.i2cReadBuffer(size)
         }
 
-
-
-
-        //% group="i2c Adressen" advanced=true
-        //% block="i2c Fehlercode" weight=2
+        //% group="i2c Register lesen" advanced=true
+        //% block="%Calli2bot i2c Fehlercode" weight=1
         geti2cError() { return this.i2cError }
 
-        i2cWriteBuffer(buf: Buffer, repeat: boolean = false) {
+
+        // ========== private
+
+        private i2cWriteBuffer(buf: Buffer) { // repeat funktioniert nicht
             if (this.i2cError == 0) { // vorher kein Fehler
-                this.i2cError = pins.i2cWriteBuffer(this.i2cADDR, buf, repeat)
+                this.i2cError = pins.i2cWriteBuffer(this.i2cADDR, buf)
                 if (this.i2cCheck && this.i2cError != 0)  // vorher kein Fehler, wenn (n_i2cCheck=true): beim 1. Fehler anzeigen
                     basic.showString(Buffer.fromArray([this.i2cADDR]).toHex()) // zeige fehlerhafte i2c-Adresse als HEX
             } else if (!this.i2cCheck)  // vorher Fehler, aber ignorieren (n_i2cCheck=false): i2c weiter versuchen
-                this.i2cError = pins.i2cWriteBuffer(this.i2cADDR, buf, repeat)
+                this.i2cError = pins.i2cWriteBuffer(this.i2cADDR, buf)
             //else { } // n_i2cCheck=true und n_i2cError != 0: weitere i2c Aufrufe blockieren
         }
 
-        i2cReadBuffer(size: number, repeat: boolean = false): Buffer {
+        private i2cReadBuffer(size: number): Buffer { // repeat funktioniert nicht
             if (!this.i2cCheck || this.i2cError == 0)
-                return pins.i2cReadBuffer(this.i2cADDR, size, repeat)
+                return pins.i2cReadBuffer(this.i2cADDR, size)
             else
                 return Buffer.create(size)
         }
-
-
 
     } // class Calli2bot
 
