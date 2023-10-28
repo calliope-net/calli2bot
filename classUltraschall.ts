@@ -1,4 +1,0 @@
-
-namespace calli2bot {
-
-}
