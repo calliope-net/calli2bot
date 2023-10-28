@@ -17,9 +17,6 @@ namespace calli2bot {
             this.in_Digital = i2cReadBuffer(eADDR.CB2_x22, 1).getUint8(0)
         }
 
-        //% group="INPUT digital 6 Bit" advanced=true
-        //% block="%Calli2bot Digitaleingänge" weight=4
-        getINPUTS() { return this.in_Digital }
 
         //% group="INPUT digital 6 Bit"
         //% block="%Calli2bot %pINPUTS" weight=2
@@ -49,10 +46,17 @@ namespace calli2bot {
             this.in_Ultraschallsensor = i2cReadBuffer(eADDR.CB2_x22, 3).getNumber(NumberFormat.UInt16LE, 1)
         }
 
-        //% group="INPUT Ultraschallsensor 16 Bit (mm)"
-        //% block="%Calli2bot Ultraschallsensor" weight=4
-        getINPUT_US() { return this.in_Digital }
 
+
+        //% group="INPUT Ultraschallsensor 16 Bit (mm)"
+        //% block="%Calli2bot Entfernung %pVergleich %vergleich" weight=2
+        bitINPUT_US(pVergleich: eVergleich, vergleich: number) {
+            switch (pVergleich) {
+                case eVergleich.gt: return this.in_Ultraschallsensor > vergleich
+                case eVergleich.lt: return this.in_Ultraschallsensor < vergleich
+                default: return false
+            }
+        }
 
         // ========== group="INPUT Spursensoren 2*16 Bit [r,l]"
 
@@ -64,12 +68,7 @@ namespace calli2bot {
         }
 
         //% group="INPUT Spursensoren 2*16 Bit [r,l]"
-        //% block="%Calli2bot Spursensor %pRL" weight=4
-        getLINE_SEN_VALUE(pRL: eRL) { return this.in_Spursensoren.get(pRL) }
-
-
-        //% group="INPUT Spursensoren 2*16 Bit [r,l]"
-        //% block="%Calli2bot %pRL %pVergleich %vergleich" weight=2
+        //% block="%Calli2bot Spursensor %pRL %pVergleich %vergleich" weight=2
         //% inlineInputMode=inline
         bitLINE_SEN_VALUE(pRL: eRL, pVergleich: eVergleich, vergleich: number) {
             let sensor = this.in_Spursensoren.get(pRL)
@@ -79,6 +78,22 @@ namespace calli2bot {
                 default: return false
             }
         }
+
+        // ========== group="gespeicherte Werte lesen" advanced=true
+
+        //% group="gespeicherte Werte lesen" advanced=true
+        //% block="%Calli2bot Digitaleingänge" weight=8
+        getINPUTS() { return this.in_Digital }
+
+        //% group="gespeicherte Werte lesen" advanced=true
+        //% block="%Calli2bot Ultraschallsensor" weight=4
+        getINPUT_US() { return this.in_Ultraschallsensor }
+
+        //% group="gespeicherte Werte lesen" advanced=true
+        //% block="%Calli2bot Spursensor %pRL" weight=2
+        getLINE_SEN_VALUE(pRL: eRL) { return this.in_Spursensoren.get(pRL) }
+
+
 
     }
 
@@ -104,8 +119,8 @@ namespace calli2bot {
         //% block="OFF-Taster"
         off //= 0b00100000
     }
-    
-    export enum eRL { rechts = 0, links = 1 }
+
+    export enum eRL { rechts = 0, links = 1 } // Index im Array
 
     export enum eVergleich {
         //% block=">"
