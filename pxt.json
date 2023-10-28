@@ -9,10 +9,7 @@
         "main.ts",
         "README.md",
         "callibot.ts",
-        "calli2bot.ts",
-        "classDigital.ts",
-        "classUltraschall.ts",
-        "classSpursensoren.ts"
+        "calli2bot.ts"
     ],
     "testFiles": [
         "test.ts"
