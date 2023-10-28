@@ -8,7 +8,8 @@
         "main.blocks",
         "main.ts",
         "README.md",
-        "callibot.ts"
+        "callibot.ts",
+        "calli2bot.ts"
     ],
     "testFiles": [
         "test.ts"
