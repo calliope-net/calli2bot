@@ -52,13 +52,47 @@ PWM rechts (0..255) von Motor 2
 
     // ========== group="INPUT digital 6 Bit"
 
+    export class Digital {
+        bits: number
 
+        //% group="INPUT digital 6 Bit"
+        //% block="%classDigital %pINPUTS" weight=7
+        bitINPUTS(pINPUTS: eINPUTS) {
+            switch (pINPUTS) {
+                case eINPUTS.sp0: return (this.bits & 0b00000011) == 0
+                case eINPUTS.sp1: return (this.bits & 0b00000011) == 1
+                case eINPUTS.sp2: return (this.bits & 0b00000011) == 2
+                case eINPUTS.sp3: return (this.bits & 0b00000011) == 3
+                case eINPUTS.st0: return (this.bits & 0b00001100) == 0b00000000
+                case eINPUTS.st1: return (this.bits & 0b00001100) == 0b00000100
+                case eINPUTS.st2: return (this.bits & 0b00001100) == 0b00001000
+                case eINPUTS.st3: return (this.bits & 0b00001100) == 0b00001100
+                case eINPUTS.ont: return (this.bits & 0b00010000) == 0b00010000
+                case eINPUTS.off: return (this.bits & 0b00100000) == 0b00100000
+                default: return false
+            }
+        }
+
+    }
+
+    //% blockId=calli2bot_createINPUTS
+    //% group="INPUT digital 6 Bit"
+    //% block="createINPUTS" weight=9
+    //% blockSetVariable=classDigital
+    export function createINPUTS(): Digital {
+        let inputs = new Digital()
+
+        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUTS]), true)
+        inputs.bits = i2cReadBuffer(eADDR.CB2_x22, 1).getUint8(0)
+
+        return inputs
+    }
 
     //% group="INPUT digital 6 Bit"
     //% block="Digitaleingänge lesen" weight=8
     //% pRegister.defl=callibot.eRegister.GET_INPUTS
     //% size.min=1 size.max=10 size.defl=1
-    //% blockSetVariable=digital
+    //% blockSetVariable=vdigital
     export function readINPUTS(): number {
         i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUTS]), true)
         return i2cReadBuffer(eADDR.CB2_x22, 1).getUint8(0)
@@ -104,6 +138,9 @@ PWM rechts (0..255) von Motor 2
             default: return false
         }
     }
+
+
+
 
     // ========== group="INPUT Ultraschallsensor 16 Bit (mm)"
 

@@ -1,6 +1,6 @@
 
 namespace calli2bot {
-    export class digital {
+   /*  export class digital {
 
-    }
+    } */
 }
