@@ -1,6 +1,6 @@
 
 //% color=#007F00 icon="\uf17b" block="Calli²bot" weight=29
-namespace calliBot2
+namespace calli2bot
 /* 231024 f17b android
 
 https://github.com/knotechgmbh
@@ -54,20 +54,63 @@ PWM rechts (0..255) von Motor 2
 
 
 
-    //% group="i2c Register lesen"
-    //% block="Digitaleingänge 6 Bit" weight=8
+    //% group="INPUT digital 6 Bit"
+    //% block="Digitaleingänge lesen" weight=8
     //% pRegister.defl=callibot.eRegister.GET_INPUTS
     //% size.min=1 size.max=10 size.defl=1
+    //% blockSetVariable=digital
     export function readINPUTS(): number {
         i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUTS]))
         return i2cReadBuffer(eADDR.CB2_x22, 1).getUint8(0)
     }
 
+    export enum eINPUTS {
+        //% block="Spursucher aus"
+        sp0, //= 0b00000000,
+        //% block="Spursucher rechts"
+        sp1, //= 0b00000001,
+        //% block="Spursucher links"
+        sp2, //= 0b00000010,
+        //% block="Spursucher beide"
+        sp3, //= 0b00000011,
+        //% block="Stoßstange aus"
+        st0, //= 0b00000000,
+        //% block="Stoßstange rechts"
+        st1, //= 0b00000100,
+        //% block="Stoßstange links"
+        st2, //= 0b00001000,
+        //% block="Stoßstange beide"
+        st3, //= 0b00001100,
+        //% block="ON-Taster"
+        ont, //= 0b00010000,
+        //% block="OFF-Taster"
+        off //= 0b00100000
+    }
+
+
+    //% group="INPUT digital 6 Bit"
+    //% block="auswerten %digital %pINPUTS" weight=7
+    export function bitINPUTS(digital: number, pINPUTS: eINPUTS) {
+        switch (pINPUTS) {
+            case eINPUTS.sp0: return (digital & 0b00000011) == 0
+            case eINPUTS.sp1: return (digital & 0b00000011) == 1
+            case eINPUTS.sp2: return (digital & 0b00000011) == 2
+            case eINPUTS.sp3: return (digital & 0b00000011) == 3
+            case eINPUTS.st0: return (digital & 0b00001100) == 0b00000000
+            case eINPUTS.st1: return (digital & 0b00001100) == 0b00000100
+            case eINPUTS.st2: return (digital & 0b00001100) == 0b00001000
+            case eINPUTS.st3: return (digital & 0b00001100) == 0b00001100
+            case eINPUTS.ont: return (digital & 0b00010000) == 0b00010000
+            case eINPUTS.off: return (digital & 0b00100000) == 0b00100000
+            default: return false
+        }
+    }
 
     //% group="i2c Register lesen"
     //% block="Ultraschallsensor mm" weight=7
     //% pRegister.defl=callibot.eRegister.GET_INPUTS
     //% size.min=1 size.max=10 size.defl=1
+    //% blockSetVariable=entfernung
     export function readINPUT_US(): number {
         i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUT_US]))
         return i2cReadBuffer(eADDR.CB2_x22, 3).getNumber(NumberFormat.UInt16LE, 1)
@@ -101,6 +144,7 @@ PWM rechts (0..255) von Motor 2
     //% block="Spursensoren [r,l]" weight=4
     //% pRegister.defl=callibot.eRegister.GET_INPUTS
     //% size.min=1 size.max=10 size.defl=1
+    //% blockSetVariable=spursensoren
     export function readLINE_SEN_VALUE(): number[] {
         i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_LINE_SEN_VALUE]))
         return i2cReadBuffer(eADDR.CB2_x22, 5).slice(1, 4).toArray(NumberFormat.UInt16LE)
@@ -108,7 +152,7 @@ PWM rechts (0..255) von Motor 2
 
     //% group="i2c Register lesen"
     //% block="readRegister %pRegister size %size" weight=2
-    //% pRegister.defl=callibot.eRegister.GET_INPUTS
+    //% pRegister.defl=calli2bot.eRegister.GET_INPUTS
     //% size.min=1 size.max=10 size.defl=1
     export function readRegister(pRegister: eRegister, size: number): Buffer {
         i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([pRegister]))

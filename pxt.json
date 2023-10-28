@@ -1,5 +1,5 @@
 {
-    "name": "i2c_callibot",
+    "name": "calli2bot",
     "description": "",
     "dependencies": {
         "core": "*"
