@@ -1,7 +1,8 @@
 
 //% color=#007F00 icon="\uf17b" block="Calli²bot" weight=29
+//% groups='["beim Start","INPUT digital 6 Bit","INPUT Ultraschallsensor 16 Bit (mm)","INPUT Spursensoren 2*16 Bit [r,l]"]'
 namespace calli2bot
-/* 231024 f17b android
+/* 231024 calliope-net.github.io/callibot
 
 https://github.com/knotechgmbh
 https://github.com/MKleinSB/pxt-callibot
@@ -41,131 +42,29 @@ PWM rechts (0..255) von Motor 2
     let n_i2cCheck: boolean = false // i2c-Check
     let n_i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
 
-    //% group="calliope-net.github.io/callibot"
-    //% block="i2c beim Start || i2c-Check %ck" weight=4
+    //% group="beim Start"
+    //% block="i2c %pADDR beim Start || i2c-Check %ck" weight=4
     //% ck.shadow="toggleOnOff" ck.defl=1
-    export function beimStart(ck?: boolean) {
+    //% blockSetVariable=Calli2bot
+    export function beimStart(pADDR: eADDR, ck?: boolean) {
         n_i2cCheck = (ck ? true : false) // optionaler boolean Parameter kann undefined sein
         n_i2cError = 0 // Reset Fehlercode
         //readRegister(pADDR, eCommandByte.CONFIGURATION)
         //let x=   Digital.prototype
-
+        return new Calli2bot(pADDR)
     }
 
     // ========== group="INPUT digital 6 Bit"
 
 
-    //% blockId=calli2bot_createINPUTS
-    //% group="INPUT digital 6 Bit"
-    //% block="i2c %pADDR Digitaleingänge" weight=9
-    //% blockSetVariable=Calli2bot
-    export function createINPUTS(pADDR: eADDR) {
-       return new Calli2bot(pADDR)
-
-        //i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUTS]), true)
-        //inputs.bits = i2cReadBuffer(eADDR.CB2_x22, 1).getUint8(0)
-
-        //return inputs
-    }
-    /* 
-        //% group="INPUT digital 6 Bit"
-        // block="Digitaleingänge lesen" weight=8
-        //% pRegister.defl=callibot.eRegister.GET_INPUTS
-        //% size.min=1 size.max=10 size.defl=1
-        // blockSetVariable=vdigital
-        export function readINPUTS(): number {
-            i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUTS]), true)
-            return i2cReadBuffer(eADDR.CB2_x22, 1).getUint8(0)
-        } */
-
-    export enum eINPUTS {
-        //% block="Spursucher aus"
-        sp0, //= 0b00000000,
-        //% block="Spursucher rechts"
-        sp1, //= 0b00000001,
-        //% block="Spursucher links"
-        sp2, //= 0b00000010,
-        //% block="Spursucher beide"
-        sp3, //= 0b00000011,
-        //% block="Stoßstange aus"
-        st0, //= 0b00000000,
-        //% block="Stoßstange rechts"
-        st1, //= 0b00000100,
-        //% block="Stoßstange links"
-        st2, //= 0b00001000,
-        //% block="Stoßstange beide"
-        st3, //= 0b00001100,
-        //% block="ON-Taster"
-        ont, //= 0b00010000,
-        //% block="OFF-Taster"
-        off //= 0b00100000
-    }
-/* 
-    //% group="INPUT digital 6 Bit"
-    //% block="auswerten %digital %pINPUTS" weight=7
-    export function bitINPUTS(digital: number, pINPUTS: eINPUTS) {
-        switch (pINPUTS) {
-            case eINPUTS.sp0: return (digital & 0b00000011) == 0
-            case eINPUTS.sp1: return (digital & 0b00000011) == 1
-            case eINPUTS.sp2: return (digital & 0b00000011) == 2
-            case eINPUTS.sp3: return (digital & 0b00000011) == 3
-            case eINPUTS.st0: return (digital & 0b00001100) == 0b00000000
-            case eINPUTS.st1: return (digital & 0b00001100) == 0b00000100
-            case eINPUTS.st2: return (digital & 0b00001100) == 0b00001000
-            case eINPUTS.st3: return (digital & 0b00001100) == 0b00001100
-            case eINPUTS.ont: return (digital & 0b00010000) == 0b00010000
-            case eINPUTS.off: return (digital & 0b00100000) == 0b00100000
-            default: return false
-        }
-    }
- */
-
 
 
     // ========== group="INPUT Ultraschallsensor 16 Bit (mm)"
 
-    //% group="INPUT Ultraschallsensor 16 Bit (mm)"
-    //% block="Ultraschallsensor lesen"
-    //% blockSetVariable=entfernung
-    export function readINPUT_US(): number {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUT_US]), true)
-        return i2cReadBuffer(eADDR.CB2_x22, 3).getNumber(NumberFormat.UInt16LE, 1)
-    }
 
     // ========== group="INPUT Spursensoren 2*16 Bit [r,l]"
 
-    //% group="INPUT Spursensoren 2*16 Bit [r,l]"
-    //% block="Spursensoren lesen" weight=4
-    //% blockSetVariable=spursensoren
-    export function readLINE_SEN_VALUE(): number[] {
-        i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_LINE_SEN_VALUE]), true)
-        return i2cReadBuffer(eADDR.CB2_x22, 5).slice(1, 4).toArray(NumberFormat.UInt16LE)
-    }
-
-    export enum eRL {
-        //%block="Spursensor rechts"
-        rechts = 0,
-        //%block="Spursensor links"
-        links = 1
-    }
-    export enum eVergleich {
-        //%block=">"
-        gt,
-        //%block="<"
-        lt
-    }
-
-    //% group="INPUT Spursensoren 2*16 Bit [r,l]"
-    //% block="auswerten %sensoren %pRL %pVergleich %vergleich" weight=2
-    //% inlineInputMode=inline
-    export function getLINE_SEN_VALUE(sensoren: number[], pRL: eRL, pVergleich: eVergleich, vergleich: number) {
-        let sensor = sensoren.get(pRL)
-        switch (pVergleich) {
-            case eVergleich.gt: return sensor > vergleich
-            case eVergleich.lt: return sensor < vergleich
-            default: return false
-        }
-    }
+  
 
 
     // ========== advanced=true
@@ -207,7 +106,7 @@ PWM rechts (0..255) von Motor 2
     //% block="i2c Fehlercode" weight=2
     export function i2cError() { return n_i2cError }
 
-    export   function i2cWriteBuffer(pADDR: number, buf: Buffer, repeat: boolean = false) {
+    export function i2cWriteBuffer(pADDR: number, buf: Buffer, repeat: boolean = false) {
         if (n_i2cError == 0) { // vorher kein Fehler
             n_i2cError = pins.i2cWriteBuffer(pADDR, buf, repeat)
             if (n_i2cCheck && n_i2cError != 0)  // vorher kein Fehler, wenn (n_i2cCheck=true): beim 1. Fehler anzeigen
@@ -217,7 +116,7 @@ PWM rechts (0..255) von Motor 2
         //else { } // n_i2cCheck=true und n_i2cError != 0: weitere i2c Aufrufe blockieren
     }
 
-    export   function i2cReadBuffer(pADDR: number, size: number, repeat: boolean = false): Buffer {
+    export function i2cReadBuffer(pADDR: number, size: number, repeat: boolean = false): Buffer {
         if (!n_i2cCheck || n_i2cError == 0)
             return pins.i2cReadBuffer(pADDR, size, repeat)
         else

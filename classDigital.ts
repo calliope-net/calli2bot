@@ -1,6 +1,6 @@
 
 namespace calli2bot {
-
+/* 
     export class Digital {
         private bits: number
         private readonly iADDR: calli2bot.eADDR
@@ -37,5 +37,5 @@ namespace calli2bot {
         //% group="INPUT digital 6 Bit"
         //% block="%in_Digital GET_INPUTS" weight=2
         getINPUTS() { return this.bits }
-    }
+    } */
 }
