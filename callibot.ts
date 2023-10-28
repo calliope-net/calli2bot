@@ -69,10 +69,10 @@ PWM rechts (0..255) von Motor 2
 
     // ========== advanced=true
 
-    export enum eVersion { Typ, Firmware, Seriennummer }
+    //export enum eVersion { Typ, Firmware, Seriennummer }
     //% group="i2c Register lesen" advanced=true
     //% block="Version %pVersion HEX" weight=6
-    export function readFW_VERSION(pVersion: eVersion) {
+     function readFW_VERSION(pVersion: eVersion) {
         i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_FW_VERSION]), true)
         switch (pVersion) {
             case eVersion.Typ: { return i2cReadBuffer(eADDR.CB2_x22, 2).slice(1, 1).toHex() }
@@ -84,7 +84,7 @@ PWM rechts (0..255) von Motor 2
 
     //% group="i2c Register lesen" advanced=true
     //% block="Versorgungsspannung mV" weight=5
-    export function readPOWER(): number {
+     function readPOWER(): number {
         i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_POWER]), true)
         return i2cReadBuffer(eADDR.CB2_x22, 3).getNumber(NumberFormat.UInt16LE, 1)
     }
@@ -93,7 +93,7 @@ PWM rechts (0..255) von Motor 2
     //% block="readRegister %pRegister size %size" weight=2
     //% pRegister.defl=calli2bot.eRegister.GET_INPUTS
     //% size.min=1 size.max=10 size.defl=1
-    export function readRegister(pRegister: eRegister, size: number): Buffer {
+     function readRegister(pRegister: eRegister, size: number): Buffer {
         i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([pRegister]), true)
         return i2cReadBuffer(eADDR.CB2_x22, size)
     }
