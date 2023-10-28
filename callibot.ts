@@ -58,9 +58,9 @@ PWM rechts (0..255) von Motor 2
     //% blockId=calli2bot_createINPUTS
     //% group="INPUT digital 6 Bit"
     //% block="i2c %pADDR Digitaleingänge" weight=9
-    //% blockSetVariable=in_Digital
-    export function createINPUTS(pADDR: eADDR): Digital {
-       return new Digital(pADDR)
+    //% blockSetVariable=Calli2bot
+    export function createINPUTS(pADDR: eADDR) {
+       return new Calli2bot(pADDR)
 
         //i2cWriteBuffer(eADDR.CB2_x22, Buffer.fromArray([eRegister.GET_INPUTS]), true)
         //inputs.bits = i2cReadBuffer(eADDR.CB2_x22, 1).getUint8(0)
