@@ -63,7 +63,7 @@ PWM rechts (0..255) von Motor 2
     }
 
 
- export   enum eMotor {
+    export enum eMotor {
         //% block="links"
         m1 = 0b01,
         //% block="rechts"
@@ -107,6 +107,16 @@ PWM rechts (0..255) von Motor 2
 
     export function between(i0: number, i1: number, i2: number): boolean {
         return (i0 >= i1 && i0 <= i2)
+    }
+
+    export function change0(p0_128_255: number) {
+        let bu = Buffer.create(1)
+        bu.setNumber(NumberFormat.UInt8LE, 0, p0_128_255)           // unsigned
+        let signed_128_0_127 = bu.getNumber(NumberFormat.Int8LE, 0) // signed
+        if (signed_128_0_127 < 0)
+            return 2 * (128 + signed_128_0_127) // (u) 128 .. 255 -> (s) -128 .. -1  ->   0 .. 127
+        else
+            return -2 * (127 - signed_128_0_127) // (u)   0 .. 127 -> (s)    0 .. 127 -> 127 ..   0
     }
 
     /* enum eRgbColor {
@@ -191,6 +201,6 @@ PWM rechts (0..255) von Motor 2
         } */
 
 
-   
-        
+
+
 }// callibot.ts

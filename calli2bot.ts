@@ -117,6 +117,13 @@ namespace calli2bot {
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, 0, 0, 0, 0]))
         }
 
+        //% group="Motor (0 .. 255)"
+        //% block="Joystick %Calli2bot %p0_128_255" weight=9
+        //% p0_128_255.min=0 p0_128_255.max=255
+        change(p0_128_255: number) {
+            return change0(p0_128_255)
+        }
+
 
         // ========== group="LED"
 
