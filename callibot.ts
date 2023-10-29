@@ -4,9 +4,11 @@
 namespace calli2bot
 /* 231024 calliope-net.github.io/callibot
 
+Quellen:
 https://github.com/knotechgmbh
 https://github.com/MKleinSB/pxt-callibot
-
+umgestellt auf i2c Adresse 0x22 und Register, 0x20 und 0x21 wird von dieser Erweiterung nicht genutzt
+Code neu programmiert von Lutz Elßner im Oktober 2023
 */ {
     export enum eADDR {
         CB2_x22 = 0x22//, WR_MOTOR_x20 = 0x20, WR_LED_x21 = 0x21, RD_SENSOR_x21
