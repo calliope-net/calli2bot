@@ -96,7 +96,7 @@ namespace calli2bot {
         // ========== group="Motor (0 .. 255)"
 
         //% group="Motor (0 .. 255)"
-        //% block="Motor %Calli2bot %eMotor %pPWM (0-255) %pRichtung" weight=8
+        //% block="Motor %Calli2bot %eMotor %pPWM (0-255) %pRichtung" weight=9
         //% pwm.min=0 pwm.max=255 pwm.defl=128
         setMotor(pMotor: eMotor, pwm: number, pRichtung: eDirection) {
             if (!between(pwm, 0, 255)) { pMotor = eMotor.beide; pwm = 0 } // falscher Parameter -> beide Stop
@@ -118,12 +118,33 @@ namespace calli2bot {
         }
 
         //% group="Motor (0 .. 255)"
-        //% block="Joystick %Calli2bot %p0_128_255" weight=9
+        //% block="Joystick %Calli2bot %p0_128_255" weight=7
         //% p0_128_255.min=0 p0_128_255.max=255
         change(p0_128_255: number) {
             return change0(p0_128_255)
         }
 
+        //% group="Motor (0 .. 255)"
+        //% block="fahre Joystick %Calli2bot %pUInt32LE" weight=6
+        fahreJoystick(pUInt32LE: number) {
+            let bu_joy = Buffer.create(4)
+            bu_joy.setNumber(NumberFormat.UInt32LE, 0, pUInt32LE)
+
+            // Register 8: STATUS 1:war gedrückt
+            let on = (bu_joy.getUint8(3) == 0 ? false : true)
+
+            let driveValue1 = bu_joy.getUint8(0) // Register 3: Horizontal MSB 8 Bit
+            //if (0x78 < driveValue && driveValue < 0x88) driveValue = 0x80 // off at the outputs
+
+            let driveValue2 = bu_joy.getUint8(1) // Register 5: Vertical MSB 8 Bit
+
+            let drive = this.change(driveValue1)
+
+            let dir: eDirection = (drive < 0 ? eDirection.r : eDirection.v)
+
+            this.setMotoren(Math.abs(drive), dir, Math.abs(drive), dir)
+
+        }
 
         // ========== group="LED"
 
