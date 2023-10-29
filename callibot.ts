@@ -8,6 +8,10 @@ Quellen:
 https://github.com/knotechgmbh
 https://github.com/MKleinSB/pxt-callibot
 umgestellt auf i2c Adresse 0x22 und Register, 0x20 und 0x21 wird von dieser Erweiterung nicht genutzt
+Calli:bot2 Steuercodes Seite 3-5:
+https://github.com/calliope-net/callibot/blob/master/2021-11-12a_Callibot2_Software-Infos.pdf
+    Ab CalliBot2 wird über Register gearbeitet. D.h. Es wird immer mindestens ein Byte geschrieben, welches das Register auswählt.
+    Ein folgendes READ fragt dann dieses Register ab.
 Code neu programmiert von Lutz Elßner im Oktober 2023
 */ {
     export enum eADDR {
