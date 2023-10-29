@@ -1,6 +1,6 @@
 
 //% color=#007F00 icon="\uf17b" block="Calli²bot" weight=29
-//% groups='["beim Start","INPUT digital 6 Bit","INPUT Ultraschallsensor 16 Bit (mm)","INPUT Spursensoren 2*16 Bit [r,l]","gespeicherte Werte lesen"]'
+//% groups='["beim Start","INPUT digital 6 Bit","INPUT Ultraschallsensor 16 Bit (mm)","INPUT Spursensoren 2*16 Bit [r,l]"]'
 namespace calli2bot
 /* 231024 calliope-net.github.io/callibot
 
@@ -56,22 +56,33 @@ PWM rechts (0..255) von Motor 2
         return o
     }
 
-
+    export enum eLed {
+        //% block="linke rote LED"
+        RED0 = 5,
+        //% block="rechte rote LED"
+        RED1 = 6,
+        //% block="Spursucher LED links"
+        SPURL = 7,
+        //% block="Spursucher LED rechts"
+        SPURR = 8,
+        //% block="Power-ON LED"
+        ON = 0
+    }
 
     export enum eRgbLed {
         //% block="links vorne"
-        LV,
+        LV = 1,
         //% block="rechts vorne"
-        RV,
+        RV = 4,
         //% block="links hinten"
-        LH,
+        LH = 2,
         //% block="rechts hinten"
-        RH,
+        RH = 3,
         //% block="alle"
-        All
+        All = 0
     }
 
-    enum eRgbColor {
+    /* enum eRgbColor {
         red = 0xff0000,
         green = 0x00ff00,
         blue = 0x0000ff,
@@ -80,7 +91,7 @@ PWM rechts (0..255) von Motor 2
         aqua = 0x00ffdc,
         white = 0xffffff,
         black = 0x000000
-    }
+    } */
 
 
     // ========== group="INPUT digital 6 Bit"

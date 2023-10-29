@@ -15,8 +15,8 @@ namespace calli2bot {
             this.i2cError = 0 // Reset Fehlercode
         }
 
-        //% group="beim Start" advanced=true
-        //% block="%Calli2bot RESET_OUTPUTS" weight=2
+        //% group="Reset" advanced=true
+        //% block="alles aus %Calli2bot Motor, LEDs, Servo" weight=2
         i2cRESET_OUTPUTS() {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.RESET_OUTPUTS]))
         }
@@ -91,55 +91,36 @@ namespace calli2bot {
 
 
 
-        // ========== subcategory="LED"
+        // ========== subcategory="Motor, LED"
 
-        setRGB() {
 
+        //% group="LED" subcategory="Motor, LED"
+        //% block="LED %Calli2bot %led %onoff || Helligkeit %pwm" weight=4
+        //% onoff.shadow="toggleOnOff"
+        //% pwm.min=1 pwm.max=16 pwm.defl=16
+        setLed(pLed: eLed, on: boolean, pwm?: number) {
+            if (!on) pwm = 0
+            else if (on && Number.isNaN(pwm)) pwm = 16
+            let buffer = Buffer.fromArray([eRegister.SET_LED, pLed, pwm])
+            this.i2cWriteBuffer(buffer)
         }
 
-        //% group="RGB LED" subcategory="LED"
-        //% block="%Calli2bot V2 Schalte Beleuchtung $led rot $red grün $green blau $blue"
-        //% red.min=0 red.max=16
-        //% green.min=0 green.max=16
-        //% blue.min=0 blue.max=16
+        //% group="LED" subcategory="Motor, LED"
+        //% block="RGB LED %Calli2bot %led rot %red grün %green blau %blue" weight=2
+        //% red.min=0 red.max=15
+        //% green.min=0 green.max=15
+        //% blue.min=0 blue.max=15
         //% inlineInputMode=inline
         setRgbLed(led: eRgbLed, red: number, green: number, blue: number) {
-            let index = 0;
-            let buffer = pins.createBuffer(5)
-            //init()
-            if (led != eRgbLed.All) {
-                switch (led) {
-                    case eRgbLed.LH:
-                        index = 2;
-                        break;
-                    case eRgbLed.RH:
-                        index = 3;
-                        break;
-                    case eRgbLed.LV:
-                        index = 1;
-                        break;
-                    case eRgbLed.RV:
-                        index = 4;
-                        break;
-
-                }
-                buffer[0] = 0x03;
-                buffer[1] = index;
-                buffer[2] = red;
-                buffer[3] = green;
-                buffer[4] = blue;
+            let buffer = Buffer.fromArray([eRegister.SET_LED, led, red, green, blue])
+            if (led != eRgbLed.All)
                 this.i2cWriteBuffer(buffer);
-            }
-            else { // all leds, repeat 4 times
-                for (index = 1; index < 5; index++) {
-                    buffer[0] = 0x03;
+            else // all leds, repeat 4 times
+                for (let index = 1; index < 5; index++) {
                     buffer[1] = index;
-                    buffer[2] = red;
-                    buffer[3] = green;
-                    buffer[4] = blue;
-                    this.i2cWriteBuffer(buffer);
+                    this.i2cWriteBuffer(buffer)
+                    basic.pause(10)
                 }
-            }
         }
 
 
@@ -193,6 +174,16 @@ namespace calli2bot {
         //% group="i2c Register lesen" advanced=true
         //% block="%Calli2bot i2c Fehlercode" weight=1
         geti2cError() { return this.i2cError }
+
+
+        // ========== group="i2c Register schreiben"
+
+        //% group="i2c Register schreiben" advanced=true
+        //% block="%Calli2bot writeRegister %pRegister Bytes %bytes" weight=1
+        i2cWriteRegister(pRegister: eRegister, bytes: number[]) {
+            bytes.insertAt(0, pRegister)
+            this.i2cWriteBuffer(Buffer.fromArray(bytes))
+        }
 
 
         // ========== private
