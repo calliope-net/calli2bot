@@ -105,6 +105,10 @@ PWM rechts (0..255) von Motor 2
         All = 0
     }
 
+    export function between(i0: number, i1: number, i2: number): boolean {
+        return (i0 >= i1 && i0 <= i2)
+    }
+
     /* enum eRgbColor {
         red = 0xff0000,
         green = 0x00ff00,
@@ -188,9 +192,5 @@ PWM rechts (0..255) von Motor 2
 
 
    
-    export function between(i0: number, i1: number, i2: number): boolean {
-        return (i0 >= i1 && i0 <= i2)
-    }
-
         
 }// callibot.ts

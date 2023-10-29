@@ -23,15 +23,15 @@ namespace calli2bot {
 
         // ========== group="INPUT digital 6 Bit"
 
-        //% group="INPUT digital 6 Bit"
-        //% block="neu einlesen %Calli2bot Digitaleingänge" weight=6
+        //% group="INPUT"
+        //% block="neu einlesen %Calli2bot Digitaleingänge" weight=7
         i2cReadINPUTS() {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_INPUTS]))
             this.in_Digital = this.i2cReadBuffer(1).getUint8(0)
         }
 
-        //% group="INPUT digital 6 Bit"
-        //% block="%Calli2bot %pINPUTS" weight=2
+        //% group="INPUT"
+        //% block="%Calli2bot %pINPUTS" weight=6
         bitINPUTS(pINPUTS: eINPUTS) {
             switch (pINPUTS) {
                 case eINPUTS.sp0: return (this.in_Digital & 0b00000011) == 0
@@ -51,15 +51,15 @@ namespace calli2bot {
 
         // ========== group="INPUT Ultraschallsensor 16 Bit (mm)"
 
-        //% group="INPUT Ultraschallsensor 16 Bit (mm)"
-        //% block="neu einlesen %Calli2bot Ultraschallsensor" weight=6
+        //% group="INPUT"
+        //% block="neu einlesen %Calli2bot Ultraschallsensor" weight=3
         i2cReadINPUT_US() {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_INPUT_US]))
             this.in_Ultraschallsensor = this.i2cReadBuffer(3).getNumber(NumberFormat.UInt16LE, 1)
         }
 
-        //% group="INPUT Ultraschallsensor 16 Bit (mm)"
-        //% block="%Calli2bot Entfernung %pVergleich %vergleich" weight=2
+        //% group="INPUT"
+        //% block="%Calli2bot Entfernung %pVergleich %vergleich mm" weight=2
         bitINPUT_US(pVergleich: eVergleich, vergleich: number) {
             switch (pVergleich) {
                 case eVergleich.gt: return this.in_Ultraschallsensor > vergleich
@@ -70,14 +70,14 @@ namespace calli2bot {
 
         // ========== group="INPUT Spursensoren 2*16 Bit [r,l]"
 
-        //% group="INPUT Spursensoren 2*16 Bit [r,l]"
+        //% group="INPUT Spursensoren 2*16 Bit [r,l]" advanced=true
         //% block="neu einlesen %Calli2bot Spursensoren" weight=6
         i2cReadLINE_SEN_VALUE() {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_LINE_SEN_VALUE]))
             this.in_Spursensoren = this.i2cReadBuffer(5).slice(1, 4).toArray(NumberFormat.UInt16LE)
         }
 
-        //% group="INPUT Spursensoren 2*16 Bit [r,l]"
+        //% group="INPUT Spursensoren 2*16 Bit [r,l]" advanced=true
         //% block="%Calli2bot Spursensor %pRL %pVergleich %vergleich" weight=2
         //% inlineInputMode=inline
         bitLINE_SEN_VALUE(pRL: eRL, pVergleich: eVergleich, vergleich: number) {
@@ -95,7 +95,7 @@ namespace calli2bot {
 
         // ========== group="Motor (0 .. 255)"
 
-        //% group="Motor (0 .. 255)" subcategory="Motor, LED"
+        //% group="Motor (0 .. 255)"
         //% block="Motor %Calli2bot %eMotor %pPWM (0-255) %pRichtung" weight=8
         //% pwm.min=0 pwm.max=255 pwm.defl=128
         setMotor(pMotor: eMotor, pwm: number, pRichtung: eDirection) {
@@ -106,7 +106,7 @@ namespace calli2bot {
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, pMotor, pRichtung, pwm]))
         }
 
-        //% group="Motor (0 .. 255)" subcategory="Motor, LED"
+        //% group="Motor (0 .. 255)"
         //% block="Motoren %Calli2bot links %pPWM1 (0-255) %pRichtung1 rechts %pPWM2 %pRichtung2" weight=8
         //% pwm1.min=0 pwm1.max=255 pwm1.defl=128 pwm2.min=0 pwm2.max=255 pwm2.defl=128
         //% inlineInputMode=inline
@@ -120,7 +120,7 @@ namespace calli2bot {
 
         // ========== group="LED"
 
-        //% group="LED" subcategory="Motor, LED"
+        //% group="LED"
         //% block="LED %Calli2bot %led %onoff || Helligkeit %pwm" weight=4
         //% onoff.shadow="toggleOnOff"
         //% pwm.min=1 pwm.max=16 pwm.defl=16
@@ -131,7 +131,7 @@ namespace calli2bot {
             this.i2cWriteBuffer(buffer)
         }
 
-        //% group="LED" subcategory="Motor, LED"
+        //% group="LED"
         //% block="RGB LED %Calli2bot %led rot %red grün %green blau %blue" weight=2
         //% red.min=0 red.max=15
         //% green.min=0 green.max=15
@@ -155,11 +155,11 @@ namespace calli2bot {
         // ========== group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
 
         //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
-        //% block="%Calli2bot Digitaleingänge" weight=8
+        //% block="%Calli2bot Digitaleingänge 6 Bit" weight=8
         getINPUTS() { return this.in_Digital }
 
         //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
-        //% block="%Calli2bot Ultraschallsensor" weight=4
+        //% block="%Calli2bot Ultraschallsensor 16 Bit (mm)" weight=4
         getINPUT_US() { return this.in_Ultraschallsensor }
 
         //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
@@ -167,9 +167,9 @@ namespace calli2bot {
         getLINE_SEN_VALUE(pRL: eRL) { return this.in_Spursensoren.get(pRL) }
 
 
-        // ========== group="i2c Register lesen"
+        // ========== group="i2c Register lesen" subcategory="i2c Register"
 
-        //% group="i2c Register lesen" advanced=true
+        //% group="i2c Register lesen" subcategory="i2c Register"
         //% block="%Calli2bot Version %pVersion HEX" weight=6
         i2cReadFW_VERSION(pVersion: eVersion) {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_FW_VERSION]))
@@ -181,14 +181,14 @@ namespace calli2bot {
             }
         }
 
-        //% group="i2c Register lesen" advanced=true
+        //% group="i2c Register lesen" subcategory="i2c Register"
         //% block="%Calli2bot Versorgungsspannung mV" weight=4
         i2cReadPOWER(): number {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_POWER]))
             return this.i2cReadBuffer(3).getNumber(NumberFormat.UInt16LE, 1)
         }
 
-        //% group="i2c Register lesen" advanced=true
+        //% group="i2c Register lesen" subcategory="i2c Register"
         //% block="%Calli2bot readRegister %pRegister size %size" weight=2
         //% pRegister.defl=calli2bot.eRegister.GET_INPUTS
         //% size.min=1 size.max=10 size.defl=1
@@ -197,14 +197,14 @@ namespace calli2bot {
             return this.i2cReadBuffer(size)
         }
 
-        //% group="i2c Register lesen" advanced=true
+        //% group="i2c Register lesen" subcategory="i2c Register"
         //% block="%Calli2bot i2c Fehlercode" weight=1
         geti2cError() { return this.i2cError }
 
 
         // ========== group="i2c Register schreiben"
 
-        //% group="i2c Register schreiben" advanced=true
+        //% group="i2c Register schreiben" subcategory="i2c Register"
         //% block="%Calli2bot writeRegister %pRegister Bytes %bytes" weight=1
         i2cWriteRegister(pRegister: eRegister, bytes: number[]) {
             bytes.insertAt(0, pRegister)
