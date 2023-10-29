@@ -62,6 +62,23 @@ PWM rechts (0..255) von Motor 2
         return o
     }
 
+
+ export   enum eMotor {
+        //% block="links"
+        m1 = 0b01,
+        //% block="rechts"
+        m2 = 0b10,
+        //% block="beide gleich"
+        beide = 0b11
+    }
+
+    export enum eDirection {
+        //% block="vorwärts"
+        v = 0,
+        //% block="rückwärts"
+        r = 1
+    }
+
     export enum eLed {
         //% block="linke rote LED"
         RED0 = 5,
@@ -168,4 +185,12 @@ PWM rechts (0..255) von Motor 2
             else
                 return Buffer.create(size)
         } */
+
+
+   
+    export function between(i0: number, i1: number, i2: number): boolean {
+        return (i0 >= i1 && i0 <= i2)
+    }
+
+        
 }// callibot.ts

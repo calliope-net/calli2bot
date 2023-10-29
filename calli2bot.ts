@@ -93,6 +93,32 @@ namespace calli2bot {
 
         // ========== subcategory="Motor, LED"
 
+        // ========== group="Motor (0 .. 255)"
+
+        //% group="Motor (0 .. 255)" subcategory="Motor, LED"
+        //% block="Motor %Calli2bot %eMotor %pPWM (0-255) %pRichtung" weight=8
+        //% pwm.min=0 pwm.max=255 pwm.defl=128
+        setMotor(pMotor: eMotor, pwm: number, pRichtung: eDirection) {
+            if (!between(pwm, 0, 255)) { pMotor = eMotor.beide; pwm = 0 } // falscher Parameter -> beide Stop
+            if (pMotor == eMotor.beide)
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, pMotor, pRichtung, pwm, pRichtung, pwm]))
+            else
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, pMotor, pRichtung, pwm]))
+        }
+
+        //% group="Motor (0 .. 255)" subcategory="Motor, LED"
+        //% block="Motoren %Calli2bot links %pPWM1 (0-255) %pRichtung1 rechts %pPWM2 %pRichtung2" weight=8
+        //% pwm1.min=0 pwm1.max=255 pwm1.defl=128 pwm2.min=0 pwm2.max=255 pwm2.defl=128
+        //% inlineInputMode=inline
+        setMotoren(pwm1: number, pRichtung1: eDirection, pwm2: number, pRichtung2: eDirection) {
+            if (between(pwm1, 0, 255) && between(pwm2, 0, 255))
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, pRichtung1, pwm1, pRichtung2, pwm2]))
+            else
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, 0, 0, 0, 0]))
+        }
+
+
+        // ========== group="LED"
 
         //% group="LED" subcategory="Motor, LED"
         //% block="LED %Calli2bot %led %onoff || Helligkeit %pwm" weight=4
@@ -126,17 +152,17 @@ namespace calli2bot {
 
         // ========== advanced=true
 
-        // ========== group="gespeicherte Werte lesen" advanced=true
+        // ========== group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
 
-        //% group="gespeicherte Werte lesen" advanced=true
+        //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
         //% block="%Calli2bot Digitaleingänge" weight=8
         getINPUTS() { return this.in_Digital }
 
-        //% group="gespeicherte Werte lesen" advanced=true
+        //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
         //% block="%Calli2bot Ultraschallsensor" weight=4
         getINPUT_US() { return this.in_Ultraschallsensor }
 
-        //% group="gespeicherte Werte lesen" advanced=true
+        //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
         //% block="%Calli2bot Spursensor %pRL" weight=2
         getLINE_SEN_VALUE(pRL: eRL) { return this.in_Spursensoren.get(pRL) }
 
