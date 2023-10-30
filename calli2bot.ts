@@ -155,14 +155,14 @@ namespace calli2bot {
             // lenken
             let lenken_255_0_255 = sign(joyVertical)
             let lenken_100_70 = Math.map(Math.abs(lenken_255_0_255), 0, 128, 70, 100)
-
+/* 
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 0, 3, joyHorizontal, lcd16x2rgb.eAlign.right)
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_255_0_255, lcd16x2rgb.eAlign.right)
 
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 3, joyVertical, lcd16x2rgb.eAlign.right)
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 4, 7, lenken_255_0_255, lcd16x2rgb.eAlign.right)
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_70, lcd16x2rgb.eAlign.right)
-
+ */
 
             //this.setMotoren(pwm, dir, pwm, dir)
 
