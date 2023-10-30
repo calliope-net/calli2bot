@@ -168,13 +168,13 @@ namespace calli2bot {
 
             // lenken
             let lenken_255_0_255 = sign(joyVertical)
-            let lenken_100_70 = Math.round(Math.map(Math.abs(lenken_255_0_255), 0, 128, 70, 100))
+            let lenken_100_50 = Math.round(Math.map(Math.abs(lenken_255_0_255), 0, 128, 50, 100))
 
             // lenken Richtung
             if (lenken_255_0_255 < 0)
-                fahren_links = Math.round(fahren_links * lenken_100_70 / 100)
+                fahren_rechts = Math.round(fahren_rechts * lenken_100_50 / 100)
             else
-                fahren_rechts = Math.round(fahren_rechts * lenken_100_70 / 100)
+                fahren_links = Math.round(fahren_links * lenken_100_50 / 100)
 /* 
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 0, 3, joyHorizontal, lcd16x2rgb.eAlign.right)
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_minus255_0_255, lcd16x2rgb.eAlign.right)
@@ -183,8 +183,9 @@ namespace calli2bot {
 
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 3, joyVertical, lcd16x2rgb.eAlign.right)
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 4, 7, lenken_255_0_255, lcd16x2rgb.eAlign.right)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_70, lcd16x2rgb.eAlign.right)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 12, 15, fahren_Richtung, lcd16x2rgb.eAlign.right)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_50, lcd16x2rgb.eAlign.right)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 13, 13, fahren_Richtung)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 15, 15, this.motorPower)
  */
             if (this.motorPower)
                 this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
