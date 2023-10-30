@@ -46,72 +46,6 @@ namespace calli2bot {
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, 0, 0, 0, 0]))
         }
 
-        //% group="Motor (0 .. 255)"
-        //% block="fahre Joystick %Calli2bot receivedNumber: %pUInt32LE" weight=6
-        fahreJoystick(pUInt32LE: number) {
-            let joyBuffer32 = Buffer.create(4)
-            joyBuffer32.setNumber(NumberFormat.UInt32LE, 0, pUInt32LE)
-
-            // Buffer[0] Register 3: Horizontal MSB 8 Bit (0 .. 128 .. 255)
-            let joyHorizontal = joyBuffer32.getUint8(0)
-            if (0x7C < joyHorizontal && joyHorizontal < 0x83) joyHorizontal = 0x80 // off at the outputs
-
-            // Buffer[1] Register 5: Vertical MSB 8 Bit (0 .. 128 .. 255)
-            let joyVertical = joyBuffer32.getUint8(1)
-            if (0x7C < joyVertical && joyVertical < 0x83) joyVertical = 0x80 // off at the outputs
-
-            // Buffer[2] Register 7: Current Button Position (0:gedrückt)
-            // joyBuffer32.getUint8(2) wird nicht ausgewertet
-
-            // Buffer[3] Register 8: Button STATUS (1:war gedrückt)
-            //let joyButton = joyBuffer32.getUint8(3) == 0 ? false : true
-            // Motor Power ON ...
-            if (joyBuffer32.getUint8(3) == 1)
-                this.motorPower = true // Motor Power ON
-            else if (this.motorPower)
-                this.i2cRESET_OUTPUTS() // this.motorPower = false
-
-            // fahren
-            let fahren_minus255_0_255: number //= this.change(joyHorizontal) // (0.. 128.. 255) -> (-255 .. 0 .. +255)
-            let signed_128_0_127 = this.sign(joyHorizontal)
-            if (signed_128_0_127 < 0)
-                fahren_minus255_0_255 = 2 * (128 + signed_128_0_127) // (u) 128 .. 255 -> (s) -128 .. -1  ->   0 .. 127
-            else
-                fahren_minus255_0_255 = -2 * (127 - signed_128_0_127) // (u)   0 .. 127 -> (s)    0 .. 127 -> 127 ..   0
-
-            // minus ist rückwärts
-            let fahren_Richtung: eDirection = (fahren_minus255_0_255 < 0 ? eDirection.r : eDirection.v)
-
-            let fahren_0_255 = Math.abs(fahren_minus255_0_255)
-            let fahren_links = fahren_0_255
-            let fahren_rechts = fahren_0_255
-
-            // lenken
-            let lenken_255_0_255 = this.sign(joyVertical)
-            let lenken_100_50 = Math.round(Math.map(Math.abs(lenken_255_0_255), 0, 128, 50, 100))
-
-            // lenken Richtung
-            if (lenken_255_0_255 < 0) // minus ist rechts
-                fahren_rechts = Math.round(fahren_rechts * lenken_100_50 / 100)
-            else
-                fahren_links = Math.round(fahren_links * lenken_100_50 / 100)
-            /* 
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 0, 3, joyHorizontal, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_minus255_0_255, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 8, 11, fahren_links, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 12, 15, fahren_rechts, lcd16x2rgb.eAlign.right)
-            
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 3, joyVertical, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 4, 7, lenken_255_0_255, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_50, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 13, 13, fahren_Richtung)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 15, 15, this.motorPower)
-             */
-            if (this.motorPower)
-                this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
-
-        }
-
 
         // ========== group="LED"
 
@@ -190,6 +124,7 @@ namespace calli2bot {
         }
 
 
+
         // ========== advanced=true
 
         // ========== group="Reset"
@@ -200,22 +135,6 @@ namespace calli2bot {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.RESET_OUTPUTS]))
             this.motorPower = false
         }
-
-
-        // ========== group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
-
-        //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
-        //% block="%Calli2bot Digitaleingänge 6 Bit" weight=8
-        getINPUTS() { return this.input_Digital }
-
-        //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
-        //% block="%Calli2bot Ultraschallsensor 16 Bit (mm)" weight=4
-        getINPUT_US() { return this.input_Ultraschallsensor }
-
-        //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
-        //% block="%Calli2bot Spursensor %pRL" weight=2
-        getLINE_SEN_VALUE(pRL: eRL) { return this.input_Spursensoren.get(pRL) }
-
 
         // ========== group="INPUT Spursensoren 2*16 Bit [r,l]"
 
@@ -236,6 +155,91 @@ namespace calli2bot {
                 case eVergleich.lt: return sensor < vergleich
                 default: return false
             }
+        }
+
+
+
+        // ========== group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
+
+        //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
+        //% block="%Calli2bot Digitaleingänge 6 Bit" weight=8
+        getINPUTS() { return this.input_Digital }
+
+        //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
+        //% block="%Calli2bot Ultraschallsensor 16 Bit (mm)" weight=4
+        getINPUT_US() { return this.input_Ultraschallsensor }
+
+        //% group="gespeicherte Werte lesen (nach 'neu einlesen')" advanced=true
+        //% block="%Calli2bot Spursensor %pRL" weight=2
+        getLINE_SEN_VALUE(pRL: eRL) { return this.input_Spursensoren.get(pRL) }
+
+
+        // ========== group="Fernsteuerung Motor (0 .. 128 .. 255) fahren und lenken"
+
+        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" advanced=true
+        //% block="fahre mit Joystick %Calli2bot receivedNumber: %pUInt32LE"
+        fahreJoystick(pUInt32LE: number) {
+            let joyBuffer32 = Buffer.create(4)
+            joyBuffer32.setNumber(NumberFormat.UInt32LE, 0, pUInt32LE)
+
+            // Buffer[0] Register 3: Horizontal MSB 8 Bit (0 .. 128 .. 255)
+            let joyHorizontal = joyBuffer32.getUint8(0)
+            if (0x7C < joyHorizontal && joyHorizontal < 0x83) joyHorizontal = 0x80 // off at the outputs
+
+            // Buffer[1] Register 5: Vertical MSB 8 Bit (0 .. 128 .. 255)
+            let joyVertical = joyBuffer32.getUint8(1)
+            if (0x7C < joyVertical && joyVertical < 0x83) joyVertical = 0x80 // off at the outputs
+
+            // Buffer[2] Register 7: Current Button Position (0:gedrückt)
+            // joyBuffer32.getUint8(2) wird nicht ausgewertet
+
+            // Buffer[3] Register 8: Button STATUS (1:war gedrückt)
+            //let joyButton = joyBuffer32.getUint8(3) == 0 ? false : true
+            // Motor Power ON ...
+            if (joyBuffer32.getUint8(3) == 1)
+                this.motorPower = true // Motor Power ON
+            else if (this.motorPower)
+                this.i2cRESET_OUTPUTS() // this.motorPower = false
+
+            // fahren
+            let fahren_minus255_0_255: number //= this.change(joyHorizontal) // (0.. 128.. 255) -> (-255 .. 0 .. +255)
+            let signed_128_0_127 = this.sign(joyHorizontal)
+            if (signed_128_0_127 < 0)
+                fahren_minus255_0_255 = 2 * (128 + signed_128_0_127) // (u) 128 .. 255 -> (s) -128 .. -1  ->   0 .. 127
+            else
+                fahren_minus255_0_255 = -2 * (127 - signed_128_0_127) // (u)   0 .. 127 -> (s)    0 .. 127 -> 127 ..   0
+
+            // minus ist rückwärts
+            let fahren_Richtung: eDirection = (fahren_minus255_0_255 < 0 ? eDirection.r : eDirection.v)
+
+            let fahren_0_255 = Math.abs(fahren_minus255_0_255)
+            let fahren_links = fahren_0_255
+            let fahren_rechts = fahren_0_255
+
+            // lenken
+            let lenken_255_0_255 = this.sign(joyVertical)
+            let lenken_100_50 = Math.round(Math.map(Math.abs(lenken_255_0_255), 0, 128, 50, 100))
+
+            // lenken Richtung
+            if (lenken_255_0_255 < 0) // minus ist rechts
+                fahren_rechts = Math.round(fahren_rechts * lenken_100_50 / 100)
+            else
+                fahren_links = Math.round(fahren_links * lenken_100_50 / 100)
+            /* 
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 0, 3, joyHorizontal, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_minus255_0_255, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 8, 11, fahren_links, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 12, 15, fahren_rechts, lcd16x2rgb.eAlign.right)
+            
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 3, joyVertical, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 4, 7, lenken_255_0_255, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_50, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 13, 13, fahren_Richtung)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 15, 15, this.motorPower)
+             */
+            if (this.motorPower)
+                this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
+
         }
 
 
@@ -301,6 +305,21 @@ namespace calli2bot {
             else return -((~i & ((2 ** e) - 1)) + 1)
         }
 
+        private format(pText: string, pLength: number, pFormat: boolean = false) {
+            if (pText.length > pLength) { return pText.substr(0, pLength) }
+            else if (pText.length < pLength && !pFormat) { return pText + this.replicate(" ", pLength - pText.length) }
+            else if (pText.length < pLength && pFormat) { return this.replicate(" ", pLength - pText.length) + pText }
+            else { return pText }
+        }
+
+        private replicate(pChar: string, pLength: number) {
+            let s: string = ""
+            if (pChar.length > 0 && pLength > 0)
+                while (s.length < pLength)
+                    s = s + pChar
+            return s
+        }
+
         private i2cWriteBuffer(buf: Buffer) { // repeat funktioniert nicht
             if (this.i2cError == 0) { // vorher kein Fehler
                 this.i2cError = pins.i2cWriteBuffer(this.i2cADDR, buf)
@@ -320,4 +339,4 @@ namespace calli2bot {
 
     } // class Calli2bot
 
-} // callibot2.ts
+} // calli2bot.ts

@@ -1,6 +1,6 @@
 
 //% color=#007F00 icon="\uf17b" block="Calli²bot" weight=29
-// groups='["beim Start","INPUT digital 6 Bit","INPUT Ultraschallsensor 16 Bit (mm)","INPUT Spursensoren 2*16 Bit [r,l]"]'
+//% groups='["beim Start","Motor (0 .. 255)","LED","INPUT"]'
 namespace calli2bot
 /* 231030 calliope-net.github.io/callibot
 
