@@ -139,10 +139,10 @@ namespace calli2bot {
             let driveValue2 = bu_joy.getUint8(1) // Register 5: Vertical MSB 8 Bit
 
             let drive = this.change(driveValue1)
-
             let dir: eDirection = (drive < 0 ? eDirection.r : eDirection.v)
+            let pwm = Math.abs(drive)
 
-            this.setMotoren(Math.abs(drive), dir, Math.abs(drive), dir)
+            this.setMotoren(pwm, dir, pwm, dir)
 
         }
 
