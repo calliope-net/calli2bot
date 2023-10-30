@@ -58,7 +58,7 @@ PWM rechts (0..255) von Motor 2
         //readRegister(pADDR, eCommandByte.CONFIGURATION)
         //let x=   Digital.prototype
         let o = new calli2bot.Calli2bot(pADDR, (ck ? true : false)) // optionaler boolean Parameter kann undefined sein
-        o.i2cRESET_OUTPUTS()
+        //o.i2cRESET_OUTPUTS()
         return o
     }
 

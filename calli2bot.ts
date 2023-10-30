@@ -4,6 +4,7 @@ namespace calli2bot {
         private readonly i2cADDR: eADDR
         private readonly i2cCheck: boolean // i2c-Check
         private i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
+        private motorPower: boolean
 
         private in_Digital: number
         private in_Ultraschallsensor: number
@@ -13,12 +14,14 @@ namespace calli2bot {
             this.i2cADDR = pADDR
             this.i2cCheck = ck
             this.i2cError = 0 // Reset Fehlercode
+            this.i2cRESET_OUTPUTS()
         }
 
         //% group="Reset" advanced=true
         //% block="alles aus %Calli2bot Motor, LEDs, Servo" weight=2
         i2cRESET_OUTPUTS() {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.RESET_OUTPUTS]))
+            this.motorPower = false
         }
 
         // ========== group="INPUT digital 6 Bit"
@@ -99,7 +102,11 @@ namespace calli2bot {
         //% block="Motor %Calli2bot %eMotor %pPWM (0-255) %pRichtung" weight=9
         //% pwm.min=0 pwm.max=255 pwm.defl=128
         setMotor(pMotor: eMotor, pwm: number, pRichtung: eDirection) {
-            if (!between(pwm, 0, 255)) { pMotor = eMotor.beide; pwm = 0 } // falscher Parameter -> beide Stop
+            if (between(pwm, 0, 255)) {
+                this.motorPower = true
+            } else { // falscher Parameter -> beide Stop
+                pMotor = eMotor.beide; pwm = 0
+            }
             if (pMotor == eMotor.beide)
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, pMotor, pRichtung, pwm, pRichtung, pwm]))
             else
@@ -143,28 +150,44 @@ namespace calli2bot {
             // joyBuffer32.getUint8(2) wird nicht ausgewertet
 
             // Buffer[3] Register 8: Button STATUS (1:war gedrückt)
-            let joyButton = joyBuffer32.getUint8(3) == 0 ? false : true
+            //let joyButton = joyBuffer32.getUint8(3) == 0 ? false : true
             // Motor Power ON ...
+            if (joyBuffer32.getUint8(3) == 1)
+                this.motorPower = true // Motor Power ON
+            else if (this.motorPower)
+                this.i2cRESET_OUTPUTS() // this.motorPower = false
 
             // fahren
-            let fahren_255_0_255 = this.change(joyHorizontal) // (0.. 128.. 255) -> (-255 .. 0 .. +255)
-            let dir: eDirection = (fahren_255_0_255 < 0 ? eDirection.r : eDirection.v)
+            let fahren_minus255_0_255 = this.change(joyHorizontal) // (0.. 128.. 255) -> (-255 .. 0 .. +255)
+            // minus ist rückwärts
+            let fahren_Richtung: eDirection = (fahren_minus255_0_255 < 0 ? eDirection.r : eDirection.v)
 
-            let pwm = Math.abs(fahren_255_0_255)
+            let fahren_0_255 = Math.abs(fahren_minus255_0_255)
+            let fahren_links = fahren_0_255
+            let fahren_rechts = fahren_0_255
 
             // lenken
             let lenken_255_0_255 = sign(joyVertical)
-            let lenken_100_70 = Math.map(Math.abs(lenken_255_0_255), 0, 128, 70, 100)
+            let lenken_100_70 = Math.round(Math.map(Math.abs(lenken_255_0_255), 0, 128, 70, 100))
+
+            // lenken Richtung
+            if (lenken_255_0_255 < 0)
+                fahren_links = Math.round(fahren_links * lenken_100_70 / 100)
+            else
+                fahren_rechts = Math.round(fahren_rechts * lenken_100_70 / 100)
 /* 
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 0, 3, joyHorizontal, lcd16x2rgb.eAlign.right)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_255_0_255, lcd16x2rgb.eAlign.right)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_minus255_0_255, lcd16x2rgb.eAlign.right)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 8, 11, fahren_links, lcd16x2rgb.eAlign.right)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 12, 15, fahren_rechts, lcd16x2rgb.eAlign.right)
 
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 3, joyVertical, lcd16x2rgb.eAlign.right)
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 4, 7, lenken_255_0_255, lcd16x2rgb.eAlign.right)
             lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_70, lcd16x2rgb.eAlign.right)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 12, 15, fahren_Richtung, lcd16x2rgb.eAlign.right)
  */
-
-            //this.setMotoren(pwm, dir, pwm, dir)
+            if (this.motorPower)
+                this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
 
         }
 
