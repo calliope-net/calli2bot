@@ -320,40 +320,4 @@ namespace calli2bot {
 
     } // class Calli2bot
 
-
-
-    export enum eINPUTS {
-        //% block="Spursucher aus"
-        sp0, //= 0b00000000,
-        //% block="Spursucher rechts"
-        sp1, //= 0b00000001,
-        //% block="Spursucher links"
-        sp2, //= 0b00000010,
-        //% block="Spursucher beide"
-        sp3, //= 0b00000011,
-        //% block="Stoßstange aus"
-        st0, //= 0b00000000,
-        //% block="Stoßstange rechts"
-        st1, //= 0b00000100,
-        //% block="Stoßstange links"
-        st2, //= 0b00001000,
-        //% block="Stoßstange beide"
-        st3, //= 0b00001100,
-        //% block="ON-Taster"
-        ont, //= 0b00010000,
-        //% block="OFF-Taster"
-        off //= 0b00100000
-    }
-
-    export enum eRL { rechts = 0, links = 1 } // Index im Array
-
-    export enum eVergleich {
-        //% block=">"
-        gt,
-        //% block="<"
-        lt
-    }
-
-    export enum eVersion { Typ, Firmware, Seriennummer }
-
 } // callibot2.ts
