@@ -5,6 +5,7 @@ namespace calli2bot {
         private readonly i2cCheck: boolean // i2c-Check
         private i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
         private motorPower: boolean
+        private log: string[]
 
         private input_Digital: number
         private input_Ultraschallsensor: number
@@ -177,7 +178,7 @@ namespace calli2bot {
         // ========== group="Fernsteuerung Motor (0 .. 128 .. 255) fahren und lenken"
 
         //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" advanced=true
-        //% block="fahre mit Joystick %Calli2bot receivedNumber: %pUInt32LE"
+        //% block="fahre mit Joystick %Calli2bot receivedNumber: %pUInt32LE" weight=6
         fahreJoystick(pUInt32LE: number) {
             let joyBuffer32 = Buffer.create(4)
             joyBuffer32.setNumber(NumberFormat.UInt32LE, 0, pUInt32LE)
@@ -240,7 +241,21 @@ namespace calli2bot {
             if (this.motorPower)
                 this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
 
+            this.log = ["", ""]
+            this.log[0] = this.format(joyHorizontal, 4, true)
+                + this.format(fahren_minus255_0_255, 4, true)
+                + this.format(fahren_links, 4, true)
+                + this.format(fahren_rechts, 4, true)
+            this.log[1] = this.format(joyVertical, 4, true)
+                + this.format(lenken_255_0_255, 4, true)
+                + " " + this.format(fahren_Richtung, 1)
+                + " " + this.format(this.motorPower, 1)
+
         }
+
+        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" advanced=true
+        //% block="%Calli2bot Protokoll lesen [fahren,lenken]" weight=2
+        getLog(): string[] { return this.log }
 
 
 
@@ -305,7 +320,8 @@ namespace calli2bot {
             else return -((~i & ((2 ** e) - 1)) + 1)
         }
 
-        private format(pText: string, pLength: number, pFormat: boolean = false) {
+        private format(pValue: any, pLength: number, pFormat: boolean = false) {
+            let pText = convertToText(pValue)
             if (pText.length > pLength) { return pText.substr(0, pLength) }
             else if (pText.length < pLength && !pFormat) { return pText + this.replicate(" ", pLength - pText.length) }
             else if (pText.length < pLength && pFormat) { return this.replicate(" ", pLength - pText.length) + pText }
