@@ -102,7 +102,7 @@ namespace calli2bot {
         //% block="Motor %Calli2bot %eMotor %pPWM (0-255) %pRichtung" weight=9
         //% pwm.min=0 pwm.max=255 pwm.defl=128
         setMotor(pMotor: eMotor, pwm: number, pRichtung: eDirection) {
-            if (between(pwm, 0, 255)) {
+            if (this.between(pwm, 0, 255)) {
                 this.motorPower = true
             } else { // falscher Parameter -> beide Stop
                 pMotor = eMotor.beide; pwm = 0
@@ -118,19 +118,19 @@ namespace calli2bot {
         //% pwm1.min=0 pwm1.max=255 pwm1.defl=128 pwm2.min=0 pwm2.max=255 pwm2.defl=128
         //% inlineInputMode=inline
         setMotoren(pwm1: number, pRichtung1: eDirection, pwm2: number, pRichtung2: eDirection) {
-            if (between(pwm1, 0, 255) && between(pwm2, 0, 255))
+            if (this.between(pwm1, 0, 255) && this.between(pwm2, 0, 255))
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, pRichtung1, pwm1, pRichtung2, pwm2]))
             else
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, 0, 0, 0, 0]))
         }
 
-        //% group="Motor (0 .. 255)"
-        //% block="Joystick %Calli2bot %p0_128_255" weight=7
-        //% p0_128_255.min=0 p0_128_255.max=255
-        change(p0_128_255: number) {
+        // group="Motor (0 .. 255)"
+        // lock="Joystick %Calli2bot %p0_128_255" weight=7
+        // p0_128_255.min=0 p0_128_255.max=255
+        /* change(p0_128_255: number) {
             //return sign(p0_128_255) * 2
             return change0(p0_128_255)
-        }
+        } */
 
         //% group="Motor (0 .. 255)"
         //% block="fahre Joystick %Calli2bot receivedNumber: %pUInt32LE" weight=6
@@ -158,7 +158,13 @@ namespace calli2bot {
                 this.i2cRESET_OUTPUTS() // this.motorPower = false
 
             // fahren
-            let fahren_minus255_0_255 = this.change(joyHorizontal) // (0.. 128.. 255) -> (-255 .. 0 .. +255)
+            let fahren_minus255_0_255: number //= this.change(joyHorizontal) // (0.. 128.. 255) -> (-255 .. 0 .. +255)
+            let signed_128_0_127 = this.sign(joyHorizontal)
+            if (signed_128_0_127 < 0)
+                fahren_minus255_0_255 = 2 * (128 + signed_128_0_127) // (u) 128 .. 255 -> (s) -128 .. -1  ->   0 .. 127
+            else
+                fahren_minus255_0_255 = -2 * (127 - signed_128_0_127) // (u)   0 .. 127 -> (s)    0 .. 127 -> 127 ..   0
+
             // minus ist rückwärts
             let fahren_Richtung: eDirection = (fahren_minus255_0_255 < 0 ? eDirection.r : eDirection.v)
 
@@ -167,32 +173,30 @@ namespace calli2bot {
             let fahren_rechts = fahren_0_255
 
             // lenken
-            let lenken_255_0_255 = sign(joyVertical)
+            let lenken_255_0_255 = this.sign(joyVertical)
             let lenken_100_50 = Math.round(Math.map(Math.abs(lenken_255_0_255), 0, 128, 50, 100))
 
             // lenken Richtung
-            if (lenken_255_0_255 < 0)
+            if (lenken_255_0_255 < 0) // minus ist rechts
                 fahren_rechts = Math.round(fahren_rechts * lenken_100_50 / 100)
             else
                 fahren_links = Math.round(fahren_links * lenken_100_50 / 100)
-/* 
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 0, 3, joyHorizontal, lcd16x2rgb.eAlign.right)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_minus255_0_255, lcd16x2rgb.eAlign.right)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 8, 11, fahren_links, lcd16x2rgb.eAlign.right)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 12, 15, fahren_rechts, lcd16x2rgb.eAlign.right)
-
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 3, joyVertical, lcd16x2rgb.eAlign.right)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 4, 7, lenken_255_0_255, lcd16x2rgb.eAlign.right)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_50, lcd16x2rgb.eAlign.right)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 13, 13, fahren_Richtung)
-            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 15, 15, this.motorPower)
- */
+            /* 
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 0, 3, joyHorizontal, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_minus255_0_255, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 8, 11, fahren_links, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 12, 15, fahren_rechts, lcd16x2rgb.eAlign.right)
+            
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 3, joyVertical, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 4, 7, lenken_255_0_255, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_50, lcd16x2rgb.eAlign.right)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 13, 13, fahren_Richtung)
+                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 15, 15, this.motorPower)
+             */
             if (this.motorPower)
                 this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
 
         }
-
-
 
         // ========== group="LED"
 
@@ -289,6 +293,13 @@ namespace calli2bot {
 
 
         // ========== private
+
+        private between(i0: number, i1: number, i2: number): boolean { return (i0 >= i1 && i0 <= i2) }
+
+        private sign(i: number, e: number = 7): number {
+            if (i < 2 ** e) return i
+            else return -((~i & ((2 ** e) - 1)) + 1)
+        }
 
         private i2cWriteBuffer(buf: Buffer) { // repeat funktioniert nicht
             if (this.i2cError == 0) { // vorher kein Fehler

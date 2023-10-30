@@ -57,9 +57,9 @@ PWM rechts (0..255) von Motor 2
         //n_i2cError = 0 // Reset Fehlercode
         //readRegister(pADDR, eCommandByte.CONFIGURATION)
         //let x=   Digital.prototype
-        let o = new calli2bot.Calli2bot(pADDR, (ck ? true : false)) // optionaler boolean Parameter kann undefined sein
+        return new calli2bot.Calli2bot(pADDR, (ck ? true : false)) // optionaler boolean Parameter kann undefined sein
         //o.i2cRESET_OUTPUTS()
-        return o
+        //return o
     }
 
 
@@ -104,11 +104,11 @@ PWM rechts (0..255) von Motor 2
         //% block="alle"
         All = 0
     }
-
+/* 
     export function between(i0: number, i1: number, i2: number): boolean {
         return (i0 >= i1 && i0 <= i2)
-    }
-
+    } */
+/* 
     export function change0(p0_128_255: number) {
         //let bu = Buffer.create(1)
         //bu.setNumber(NumberFormat.UInt8LE, 0, p0_128_255)           // unsigned
@@ -118,23 +118,23 @@ PWM rechts (0..255) von Motor 2
             return 2 * (128 + signed_128_0_127) // (u) 128 .. 255 -> (s) -128 .. -1  ->   0 .. 127
         else
             return -2 * (127 - signed_128_0_127) // (u)   0 .. 127 -> (s)    0 .. 127 -> 127 ..   0
-    }
+    } */
 
-    //% group="Motor (0 .. 255)"
-    //% block="Vorzeichen %i || Bits 2** %exp" weight=2
-    //% exp.defl=7
+/*     // group="Motor (0 .. 255)"
+    // lock="Vorzeichen %i || Bits 2** %exp" weight=2
+    // exp.defl=7
     export function sign(i: number, exp: number = 7): number {
         //i = i2c.HEXe(i2c.H4.x40, i2c.H0.x1)
         if (i < 2 ** exp)  // 2**6 = 64 = 0x40
             return i
         else {
             return -((~i & ((2 ** exp) - 1)) + 1)
-            /* i = ~i // Bitwise Not
-            i = i & ((2 ** exp) - 1) // 63 = 0x3F alle Bits links löschen
-            i += 1
-            return -i */
+            //i = ~i // Bitwise Not
+            //i = i & ((2 ** exp) - 1) // 63 = 0x3F alle Bits links löschen
+            //i += 1
+            //return -i
         }
-    }
+    } */
 
     /* enum eRgbColor {
         red = 0xff0000,
