@@ -126,26 +126,49 @@ namespace calli2bot {
         }
 
         //% group="Motor (0 .. 255)"
-        //% block="fahre Joystick %Calli2bot %pUInt32LE" weight=6
+        //% block="fahre Joystick %Calli2bot receivedNumber: %pUInt32LE" weight=6
         fahreJoystick(pUInt32LE: number) {
-            let bu_joy = Buffer.create(4)
-            bu_joy.setNumber(NumberFormat.UInt32LE, 0, pUInt32LE)
+            let joyBuffer32 = Buffer.create(4)
+            joyBuffer32.setNumber(NumberFormat.UInt32LE, 0, pUInt32LE)
 
-            // Register 8: STATUS 1:war gedrückt
-            let on = (bu_joy.getUint8(3) == 0 ? false : true)
+            // Buffer[0] Register 3: Horizontal MSB 8 Bit (0 .. 128 .. 255)
+            let joyHorizontal = joyBuffer32.getUint8(0)
+            if (0x7C < joyHorizontal && joyHorizontal < 0x83) joyHorizontal = 0x80 // off at the outputs
 
-            let driveValue1 = bu_joy.getUint8(0) // Register 3: Horizontal MSB 8 Bit
-            //if (0x78 < driveValue && driveValue < 0x88) driveValue = 0x80 // off at the outputs
+            // Buffer[1] Register 5: Vertical MSB 8 Bit (0 .. 128 .. 255)
+            let joyVertical = joyBuffer32.getUint8(1)
+            if (0x7C < joyVertical && joyVertical < 0x83) joyVertical = 0x80 // off at the outputs
 
-            let driveValue2 = bu_joy.getUint8(1) // Register 5: Vertical MSB 8 Bit
+            // Buffer[2] Register 7: Current Button Position (0:gedrückt)
+            // joyBuffer32.getUint8(2) wird nicht ausgewertet
 
-            let drive = this.change(driveValue1)
-            let dir: eDirection = (drive < 0 ? eDirection.r : eDirection.v)
-            let pwm = Math.abs(drive)
+            // Buffer[3] Register 8: Button STATUS (1:war gedrückt)
+            let joyButton = joyBuffer32.getUint8(3) == 0 ? false : true
+            // Motor Power ON ...
 
-            this.setMotoren(pwm, dir, pwm, dir)
+            // fahren
+            let fahren_255_0_255 = this.change(joyHorizontal) // (0.. 128.. 255) -> (-255 .. 0 .. +255)
+            let dir: eDirection = (fahren_255_0_255 < 0 ? eDirection.r : eDirection.v)
+
+            let pwm = Math.abs(fahren_255_0_255)
+
+            // lenken
+            let lenken_255_0_255 = sign(joyVertical)
+            let lenken_100_70 = Math.map(Math.abs(lenken_255_0_255), 0, 128, 70, 100)
+
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 0, 3, joyHorizontal, lcd16x2rgb.eAlign.right)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_255_0_255, lcd16x2rgb.eAlign.right)
+
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 3, joyVertical, lcd16x2rgb.eAlign.right)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 4, 7, lenken_255_0_255, lcd16x2rgb.eAlign.right)
+            lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_70, lcd16x2rgb.eAlign.right)
+
+
+            //this.setMotoren(pwm, dir, pwm, dir)
 
         }
+
+
 
         // ========== group="LED"
 
