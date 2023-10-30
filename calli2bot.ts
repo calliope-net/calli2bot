@@ -121,6 +121,7 @@ namespace calli2bot {
         //% block="Joystick %Calli2bot %p0_128_255" weight=7
         //% p0_128_255.min=0 p0_128_255.max=255
         change(p0_128_255: number) {
+            //return sign(p0_128_255) * 2
             return change0(p0_128_255)
         }
 

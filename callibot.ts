@@ -110,13 +110,30 @@ PWM rechts (0..255) von Motor 2
     }
 
     export function change0(p0_128_255: number) {
-        let bu = Buffer.create(1)
-        bu.setNumber(NumberFormat.UInt8LE, 0, p0_128_255)           // unsigned
-        let signed_128_0_127 = bu.getNumber(NumberFormat.Int8LE, 0) // signed
+        //let bu = Buffer.create(1)
+        //bu.setNumber(NumberFormat.UInt8LE, 0, p0_128_255)           // unsigned
+        //let signed_128_0_127 = bu.getNumber(NumberFormat.Int8LE, 0) // signed
+        let signed_128_0_127 = sign(p0_128_255)
         if (signed_128_0_127 < 0)
             return 2 * (128 + signed_128_0_127) // (u) 128 .. 255 -> (s) -128 .. -1  ->   0 .. 127
         else
             return -2 * (127 - signed_128_0_127) // (u)   0 .. 127 -> (s)    0 .. 127 -> 127 ..   0
+    }
+
+    //% group="Motor (0 .. 255)"
+    //% block="Vorzeichen %i || Bits 2** %exp" weight=2
+    //% exp.defl=7
+    export function sign(i: number, exp: number = 7): number {
+        //i = i2c.HEXe(i2c.H4.x40, i2c.H0.x1)
+        if (i < 2 ** exp)  // 2**6 = 64 = 0x40
+            return i
+        else {
+            return -((~i & ((2 ** exp) - 1)) + 1)
+            /* i = ~i // Bitwise Not
+            i = i & ((2 ** exp) - 1) // 63 = 0x3F alle Bits links löschen
+            i += 1
+            return -i */
+        }
     }
 
     /* enum eRgbColor {
