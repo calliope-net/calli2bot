@@ -248,6 +248,7 @@ namespace calli2bot {
                 + this.format(fahren_rechts, 4, true)
             this.log[1] = this.format(joyVertical, 4, true)
                 + this.format(lenken_255_0_255, 4, true)
+                + this.format(lenken_100_50, 4, true)
                 + " " + this.format(fahren_Richtung, 1)
                 + " " + this.format(this.motorPower, 1)
 
