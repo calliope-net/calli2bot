@@ -31,12 +31,14 @@ Richtung (0:vorwärts, 1:rückwärts) von Motor 2
 PWM rechts (0..255) von Motor 2
         */
         SET_LED = 0x03, // Write: LED´s
+        RESET_ENCODER=0x05, // 2 Byte [0]=5 [1]= 1=links, 2=rechts, 3=beide
         // Read
         GET_INPUTS = 0x80, // Digitaleingänge (1 Byte 6 Bit)
         GET_INPUT_US = 0x81, // Ultraschallsensor (3 Byte 16 Bit)
         GET_FW_VERSION = 0x82, // Typ & Firmwareversion & Seriennummer (10 Byte)
         GET_POWER = 0x83, // Versorgungsspannung [ab CalliBot2E] (3 Byte 16 Bit)
-        GET_LINE_SEN_VALUE = 0x84 // Spursensoren links / rechts Werte (5 Byte 2x16 Bit)
+        GET_LINE_SEN_VALUE = 0x84, // Spursensoren links / rechts Werte (5 Byte 2x16 Bit)
+        GET_ENCODER_VALUE = 0x91 // 9 Byte links[1-4] rechts [5-8] 2* INT32BE mit Vorzeichen
     }
 
     // ========== group="beim Start"
@@ -54,13 +56,15 @@ PWM rechts (0..255) von Motor 2
 
 
     export enum eMotor {
-        //% block="beide gleich"
+        //% block="beide"
         beide = 0b11,
         //% block="links"
         m1 = 0b01,
         //% block="rechts"
         m2 = 0b10
     }
+
+    export enum eRL { rechts = 0, links = 1 } // Index im Array
 
     export enum eDirection {
         //% block="vorwärts"
@@ -118,8 +122,6 @@ PWM rechts (0..255) von Motor 2
         off //= 0b00100000
     }
 
-    export enum eRL { rechts = 0, links = 1 } // Index im Array
-
     export enum eVergleich {
         //% block=">"
         gt,
@@ -134,7 +136,7 @@ PWM rechts (0..255) von Motor 2
     //% group="Color"
     //% block="V1 Schalte Beleuchtung Farbe $color" advanced=true
     //% color.shadow="callibot_colorPicker"
-     function setRgbLed1(color: number) {
+    function setRgbLed1(color: number) {
 
 
         let bu = Buffer.create(4)

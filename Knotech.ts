@@ -267,7 +267,7 @@ namespace calliBot2 {
         }
         buffer[1] = c2LedState;
         pins.i2cWriteBuffer(0x21, buffer);
-        nLog=buffer.toHex()
+        nLog = buffer.toHex()
     }
 
     //% intensity.min=0 intensity.max=8 intensity.defl=6

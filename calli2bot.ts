@@ -223,6 +223,63 @@ namespace calli2bot {
         getLINE_SEN_VALUE(pRL: eRL) { return this.input_Spursensoren.get(pRL) }
 
 
+
+        // ========== group="Encoder 2*32 Bit [l,r]" advanced=true
+
+        //% group="Encoder 2*32 Bit [l,r]" advanced=true
+        //% block="Encoder %Calli2bot Zähler löschen %encoder"
+        resetEncoder(encoder: eMotor) {
+            /* let bitMask = 0;
+            switch (encoder) {
+                case C2eMotor.links:
+                    bitMask = 1;
+                    break;
+                case C2eMotor.rechts:
+                    bitMask = 2;
+                    break;
+                case C2eMotor.beide:
+                    bitMask = 3;
+                    break;
+            }
+
+            let buffer = pins.createBuffer(2)
+            buffer[0] = eRegister.RESET_ENCODER // 5
+            buffer[1] = bitMask; */
+            this.i2cWriteBuffer(Buffer.fromArray([eRegister.RESET_ENCODER, encoder]))
+        }
+
+        //% group="Encoder 2*32 Bit [l,r]" advanced=true
+        //%  block="Encoder %Calli2bot Werte lesen"
+        encoderValue(): number[] {
+            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_ENCODER_VALUE]))
+            return this.i2cReadBuffer(9).slice(1, 8).toArray(NumberFormat.Int32LE)
+
+            /* 
+                        let result: number;
+                        let index: number;
+            
+                        let wbuffer = pins.createBuffer(1);
+                        wbuffer[0] = 0x91;
+                        pins.i2cWriteBuffer(0x22, wbuffer);
+                        let buffer = pins.i2cReadBuffer(0x22, 9);
+                        if (encoder == C2eSensor.links) {
+                            index = 1;
+                        }
+                        else {
+                            index = 5;
+                        }
+                        result = buffer[index + 3];
+                        result = result * 256 + buffer[index + 2];
+                        result = result * 256 + buffer[index + 1];
+                        result = result * 256 + buffer[index];
+                        result = -(~result + 1);
+                        return result; */
+        }
+
+
+
+
+
         // ==========  subcategory="fernsteuern"
 
         // ========== group="Fernsteuerung Motor (0 .. 128 .. 255) fahren und lenken"
