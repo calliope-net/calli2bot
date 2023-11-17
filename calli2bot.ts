@@ -51,7 +51,7 @@ namespace calli2bot {
         // ========== group="LED"
 
         //% group="LED"
-        //% block="LED %Calli2bot %led %onoff || Helligkeit %pwm" weight=4
+        //% block="LED %Calli2bot %led %onoff || Helligkeit %pwm" weight=6
         //% onoff.shadow="toggleOnOff"
         //% pwm.min=1 pwm.max=16 pwm.defl=16
         setLed(pLed: eLed, on: boolean, pwm?: number) {
@@ -62,7 +62,7 @@ namespace calli2bot {
         }
 
         //% group="LED"
-        //% block="RGB LED %Calli2bot %led rot %red grün %green blau %blue" weight=2
+        //% block="RGB LED %Calli2bot %led rot %red grün %green blau %blue" weight=4
         //% red.min=0 red.max=15
         //% green.min=0 green.max=15
         //% blue.min=0 blue.max=15
@@ -79,7 +79,28 @@ namespace calli2bot {
                 }
         }
 
-        
+
+
+        //% group="LED"
+        //% block="RGB LED %Calli2bot %led %color" weight=2
+        //% color.shadow="callibot_colorPicker"
+        setRgbLed2(led: eRgbLed, color: number) {
+            let buffer = Buffer.create(5)
+            buffer[0] = eRegister.SET_LED
+            buffer.setNumber(NumberFormat.UInt32BE, 1, color) // [1]=0 [2]=r [3]=g [4]=b
+            buffer[2] = buffer[2] >>> 4 // durch 16, gültige rgb Werte für callibot: 0-15
+            buffer[3] = buffer[3] >>> 4
+            buffer[4] = buffer[4] >>> 4
+            if (led != eRgbLed.All) {
+                buffer[1] = led
+                this.i2cWriteBuffer(buffer)
+            } else // all leds, repeat 4 times
+                for (let index = 1; index < 5; index++) {
+                    buffer[1] = index;
+                    this.i2cWriteBuffer(buffer)
+                    basic.pause(10)
+                }
+        }
 
 
         // ========== group="INPUT"

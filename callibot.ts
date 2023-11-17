@@ -133,35 +133,38 @@ PWM rechts (0..255) von Motor 2
 
     //% group="Color"
     //% block="V1 Schalte Beleuchtung Farbe $color" advanced=true
-    //% color.shadow="Calli2botNumberPicker"   
+    //% color.shadow="callibot_colorPicker"
     export function setRgbLed1(color: number) {
-        let b = Buffer.create(4)
-        b.setNumber(NumberFormat.UInt32BE, 0, color)
-        return b.toHex()
+
+
+        let bu = Buffer.create(4)
+        bu.setNumber(NumberFormat.UInt32BE, 0, color)
+        bu[1] = bu[1] >>> 4
+        bu[2] = bu[2] >>> 4
+        bu[3] = bu[3] >>> 4
+        //let n: number = (bu.getUint8(1) >>> 4) << 16 & (bu.getUint8(2) >>> 4) << 8 & (bu.getUint8(8) >>> 4)
+
+        //u.setNumber(NumberFormat.UInt32BE, 0, color)
+        return bu.toHex()
     }
 
-    //% blockId=Calli2botNumberPicker block="%value"
+    //% blockId=callibot_colorPicker block="%value"
     //% blockHidden=true
     //% shim=TD_ID
     //% value.fieldEditor="colornumber" value.fieldOptions.decompileLiterals=true
-    //% value.fieldOptions.colours='["#ff0000","#00ff00","#0000ff","#ffff00","#ff00ff","#00ffff","#ffffff","#000000"]'
+    //% value.fieldOptions.colours='["#ff0000","#00ff00","#0000ff","#ffff00","#a300ff","#00ffdc","#ffffff","#000000"]'
     //% value.fieldOptions.columns=4 value.fieldOptions.className='rgbColorPicker'  
-    export function Callibot2NumberPicker(color: number) {
-        let bu = Buffer.create(4)
-        bu.setNumber(NumberFormat.UInt32BE, 0, color)
-
-        return color;
-    }
-
-    enum eRgbColor {
-        red = 0xff0000,
-        green = 0x00ff00,
-        blue = 0x0000ff,
-        yellow = 0xffff00,
-        violett = 0xa300ff,
-        aqua = 0x00ffdc,
-        white = 0xffffff,
-        black = 0x000000
-    }
+    export function callibot_colorPicker(value: number) { return value }
+    /* 
+        enum eRgbColor {
+            red = 0xff0000,
+            green = 0x00ff00,
+            blue = 0x0000ff,
+            yellow = 0xffff00,
+            violett = 0xa300ff,
+            aqua = 0x00ffdc,
+            white = 0xffffff,
+            black = 0x000000
+        } */
 
 }// callibot.ts
