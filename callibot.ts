@@ -1,6 +1,6 @@
 
 //% color=#007F00 icon="\uf17b" block="Calli²bot" weight=29
-//% groups='["beim Start","Motor (0 .. 255)","LED","INPUT"]'
+//% groups='["beim Start","Motor (-100% .. 0 .. +100%)","LED","INPUT"]'
 namespace calli2bot
 /* 231030 calliope-net.github.io/callibot
 
@@ -54,12 +54,12 @@ PWM rechts (0..255) von Motor 2
 
 
     export enum eMotor {
+        //% block="beide gleich"
+        beide = 0b11,
         //% block="links"
         m1 = 0b01,
         //% block="rechts"
-        m2 = 0b10,
-        //% block="beide gleich"
-        beide = 0b11
+        m2 = 0b10
     }
 
     export enum eDirection {
@@ -83,16 +83,16 @@ PWM rechts (0..255) von Motor 2
     }
 
     export enum eRgbLed {
+        //% block="alle (4)"
+        All = 0,
         //% block="links vorne"
         LV = 1,
-        //% block="rechts vorne"
-        RV = 4,
         //% block="links hinten"
         LH = 2,
         //% block="rechts hinten"
         RH = 3,
-        //% block="alle"
-        All = 0
+        //% block="rechts vorne"
+        RV = 4
     }
 
     export enum eINPUTS {
@@ -134,7 +134,7 @@ PWM rechts (0..255) von Motor 2
     //% group="Color"
     //% block="V1 Schalte Beleuchtung Farbe $color" advanced=true
     //% color.shadow="callibot_colorPicker"
-    export function setRgbLed1(color: number) {
+     function setRgbLed1(color: number) {
 
 
         let bu = Buffer.create(4)

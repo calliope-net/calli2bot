@@ -19,28 +19,54 @@ namespace calli2bot {
         }
 
 
-        // ========== group="Motor (0 .. 255)"
+        // ========== group="Motor (-100% .. 0 .. +100%)"
 
-        //% group="Motor (0 .. 255)"
-        //% block="Motor %Calli2bot %eMotor %pPWM (0-255) %pRichtung" weight=9
-        //% pwm.min=0 pwm.max=255 pwm.defl=128
-        setMotor(pMotor: eMotor, pwm: number, pRichtung: eDirection) {
+        //% group="Motor (-100% .. 0 .. +100%)"
+        //% block="Motoren %Calli2bot links mit %pwm1 \\% rechts mit %pwm2 \\%" weight=8
+        //% pwm1.shadow="speedPicker" pwm1.defl=0
+        //% pwm2.shadow="speedPicker" pwm2.defl=0
+        setMotoren2(pwm1: number, pwm2: number) {
+            this.log = [pwm1 + " " + pwm2, ""]
+            let pRichtung1 = (pwm1 < 0 ? eDirection.r : eDirection.v)
+            let pRichtung2 = (pwm2 < 0 ? eDirection.r : eDirection.v)
+            pwm1 = Math.trunc(Math.abs(pwm1) * 255 / 100)
+            pwm2 = Math.trunc(Math.abs(pwm2) * 255 / 100)
+
+            this.log[1] = pwm1 + " " + pwm2
+
+            this.setMotoren(pwm1, pRichtung1, pwm2, pRichtung2)
+
+            //if (this.between(pwm1, 0, 255) && this.between(pwm2, 0, 255))
+            //    this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, pRichtung1, pwm1, pRichtung2, pwm2]))
+            //else
+            //    this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, 0, 0, 0, 0]))
+        }
+
+        //% group="Motor (-100% .. 0 .. +100%)"
+        //% block="Motor %Calli2bot %pMotor mit %pwm \\%" weight=7
+        //% pwm.shadow="speedPicker" pwm.defl=0
+        setMotor(pMotor: eMotor, pwm: number) {
+            let pRichtung = (pwm < 0 ? eDirection.r : eDirection.v)
+            pwm = Math.trunc(Math.abs(pwm) * 255 / 100)
+
             if (this.between(pwm, 0, 255)) {
-                this.motorPower = true
-            } else { // falscher Parameter -> beide Stop
+                //this.motorPower = true
+            } else  // falscher Parameter -> beide Stop
                 pMotor = eMotor.beide; pwm = 0
-            }
+
             if (pMotor == eMotor.beide)
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, pMotor, pRichtung, pwm, pRichtung, pwm]))
             else
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, pMotor, pRichtung, pwm]))
         }
 
-        //% group="Motor (0 .. 255)"
-        //% block="Motoren %Calli2bot links %pPWM1 (0-255) %pRichtung1 rechts %pPWM2 %pRichtung2" weight=8
+
+
+        //% group="Motor (0 .. 255)" deprecated=true
+        //% block="Motoren %Calli2bot links %pPWM1 (0-255) %pRichtung1 rechts %pPWM2 %pRichtung2" weight=2
         //% pwm1.min=0 pwm1.max=255 pwm1.defl=128 pwm2.min=0 pwm2.max=255 pwm2.defl=128
         //% inlineInputMode=inline
-        setMotoren(pwm1: number, pRichtung1: eDirection, pwm2: number, pRichtung2: eDirection) {
+        private setMotoren(pwm1: number, pRichtung1: eDirection, pwm2: number, pRichtung2: eDirection) {
             if (this.between(pwm1, 0, 255) && this.between(pwm2, 0, 255))
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, pRichtung1, pwm1, pRichtung2, pwm2]))
             else
@@ -57,29 +83,28 @@ namespace calli2bot {
         setLed(pLed: eLed, on: boolean, pwm?: number) {
             if (!on) pwm = 0
             else if (on && Number.isNaN(pwm)) pwm = 16
-            let buffer = Buffer.fromArray([eRegister.SET_LED, pLed, pwm])
-            this.i2cWriteBuffer(buffer)
+            this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, pLed, pwm]))
         }
 
         //% group="LED"
         //% block="RGB LED %Calli2bot %led rot %red grün %green blau %blue" weight=4
-        //% red.min=0 red.max=15
-        //% green.min=0 green.max=15
-        //% blue.min=0 blue.max=15
+        //% red.min=0 red.max=16 red.defl=16
+        //% green.min=0 green.max=16 green.defl=16
+        //% blue.min=0 blue.max=16 blue.defl=16
         //% inlineInputMode=inline
-        setRgbLed(led: eRgbLed, red: number, green: number, blue: number) {
-            let buffer = Buffer.fromArray([eRegister.SET_LED, led, red, green, blue])
-            if (led != eRgbLed.All)
-                this.i2cWriteBuffer(buffer);
-            else // all leds, repeat 4 times
-                for (let index = 1; index < 5; index++) {
-                    buffer[1] = index;
-                    this.i2cWriteBuffer(buffer)
-                    basic.pause(10)
-                }
+        setRgbLed1(led: eRgbLed, red: number, green: number, blue: number) {
+            if (red >= 0 && green >= 0 && blue >= 0) {
+                let buffer = Buffer.fromArray([eRegister.SET_LED, led, red, green, blue])
+                if (led != eRgbLed.All)
+                    this.i2cWriteBuffer(buffer);
+                else // all leds, repeat 4 times
+                    for (let i = 1; i < 5; i++) {
+                        buffer[1] = i
+                        this.i2cWriteBuffer(buffer)
+                        basic.pause(10)
+                    }
+            }
         }
-
-
 
         //% group="LED"
         //% block="RGB LED %Calli2bot %led %color" weight=2
@@ -95,8 +120,8 @@ namespace calli2bot {
                 buffer[1] = led
                 this.i2cWriteBuffer(buffer)
             } else // all leds, repeat 4 times
-                for (let index = 1; index < 5; index++) {
-                    buffer[1] = index;
+                for (let i = 1; i < 5; i++) {
+                    buffer[1] = i
                     this.i2cWriteBuffer(buffer)
                     basic.pause(10)
                 }

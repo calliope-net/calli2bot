@@ -7,6 +7,12 @@ enum C2Motor {
     beide
 }
 
+enum C2eMotor {
+    links,
+    rechts,
+    beide
+}
+
 enum C2Stop {
     //% block="auslaufend"
     Frei,
@@ -22,6 +28,11 @@ enum C2Servo {
 }
 
 enum C2Sensor {
+    links,
+    rechts
+}
+
+enum C2eSensor {
     links,
     rechts
 }
@@ -384,6 +395,35 @@ namespace calliBot2 {
         nLog = buffer.toHex()
     }
 
+    //% blockId=c2eStopAll block="Alles abschalten"
+    //% advanced=true
+    export function stopAll() {
+        let buffer = pins.createBuffer(1)
+        buffer[0] = 0x01;
+        pins.i2cWriteBuffer(0x22, buffer);
+    }
+
+    //% blockId=c2eResetEncoder block="Lösche Encoder-Zähler |%encoder"
+    //% advanced=true
+    export function resetEncoder(encoder: C2eMotor) {
+        let bitMask = 0;
+        switch (encoder) {
+            case C2eMotor.links:
+                bitMask = 1;
+                break;
+            case C2eMotor.rechts:
+                bitMask = 2;
+                break;
+            case C2eMotor.beide:
+                bitMask = 3;
+                break;
+        }
+        let buffer = pins.createBuffer(2)
+        buffer[0] = 5;
+        buffer[1] = bitMask;
+        pins.i2cWriteBuffer(0x22, buffer);
+    }
+
     //% block="V2 Stoßstange |%sensor| |%status"
     //% color="#00C040" 
     export function readBumperSensor(sensor: C2Sensor, status: C2State): boolean {
@@ -459,6 +499,88 @@ namespace calliBot2 {
         }
         else {
             return (256 * buffer[1] + buffer[2]) / 10
+        }
+    }
+
+
+    //% blockID=c2eEncoder color="#00C040" block="Encoderwert |%encoder"
+    //% advanced = true
+    export function encoderValue(encoder: C2eSensor): number {
+        let result: number;
+        let index: number;
+
+        let wbuffer = pins.createBuffer(1);
+        wbuffer[0] = 0x91;
+        pins.i2cWriteBuffer(0x22, wbuffer);
+        let buffer = pins.i2cReadBuffer(0x22, 9);
+        if (encoder == C2eSensor.links) {
+            index = 1;
+        }
+        else {
+            index = 5;
+        }
+        result = buffer[index + 3];
+        result = result * 256 + buffer[index + 2];
+        result = result * 256 + buffer[index + 1];
+        result = result * 256 + buffer[index];
+        result = -(~result + 1);
+        return result;
+    }
+
+
+
+
+
+    //% blockID=c2eBattVoltage color="#00C040" block="Batteriespannung (mV)"
+    //% advanced = true
+    export function batteryVoltage(): number {
+        let wbuffer = pins.createBuffer(1);
+        wbuffer[0] = 0x83;
+        pins.i2cWriteBuffer(0x22, wbuffer);
+        let buffer = pins.i2cReadBuffer(0x22, 3);
+        return (buffer[2] * 256 + buffer[1]);
+    }
+
+
+    //% blockID=c2eLineRaw color="#00C040" block="Spursensor $sensor analog (mV)"
+    //% advanced = true
+    export function lineSensorRaw(sensor: C2eSensor): number {
+        let wBuffer = pins.createBuffer(1);
+        let sensorValue: number;
+
+        wBuffer[0] = 0x84;
+        pins.i2cWriteBuffer(0x22, wBuffer);
+        let buffer = pins.i2cReadBuffer(0x22, 5);
+        if (sensor == C2eSensor.links) {
+            sensorValue = buffer[2] * 256 + buffer[1];
+        }
+        else {
+            sensorValue = buffer[4] * 256 + buffer[3];
+        }
+        return sensorValue;
+    }
+
+    //% blockID=c2eSwOn color="#00C040" block="Taster An"
+    //% advanced = true
+    export function switchOn(): boolean {
+        let buffer = pins.i2cReadBuffer(0x21, 1);
+        if (buffer[0] & 0x10) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    //% blockID=c2eSwOff color="#00C040" block="Taster Aus"
+    //% advanced = true
+    export function switchOff(): boolean {
+        let buffer = pins.i2cReadBuffer(0x21, 1);
+        if (buffer[0] & 0x20) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
