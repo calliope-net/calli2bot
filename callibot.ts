@@ -46,7 +46,10 @@ PWM rechts (0..255) von Motor 2
     //% ck.shadow="toggleOnOff" ck.defl=1
     //% blockSetVariable=Calli2bot
     export function beimStart(pADDR: eADDR, ck?: boolean): Calli2bot {
-        return new Calli2bot(pADDR, (ck ? true : false)) // optionaler boolean Parameter kann undefined sein
+        let c2 = new Calli2bot(pADDR, (ck ? true : false)) // optionaler boolean Parameter kann undefined sein
+        calliBot2.c2Initialized = 1
+        calliBot2.c2IsBot2 = 1
+        return c2
     }
 
 
@@ -91,7 +94,7 @@ PWM rechts (0..255) von Motor 2
         //% block="alle"
         All = 0
     }
-   
+
     export enum eINPUTS {
         //% block="Spursucher aus"
         sp0, //= 0b00000000,

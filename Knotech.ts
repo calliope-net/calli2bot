@@ -105,9 +105,10 @@ enum C2Check {
 //% weight=50 color="#FF0000" icon="\uf013" block="Calli:bot 2"
 namespace calliBot2 {
 
-    let c2Initialized = 0;
+    export let c2Initialized = 0;
     let c2LedState = 0;
-    let c2IsBot2 = 0;
+    export let c2IsBot2 = 0;
+    export let nLog: string = ""
 
     /**
     * Custom color picker
@@ -123,7 +124,8 @@ namespace calliBot2 {
         return value;
     }
 
-    function init() {
+    //% block="init" advanced=true weight=8
+    export function init() {
         if (c2Initialized != 1) {
             c2Initialized = 1;
             let buffer = pins.i2cReadBuffer(0x21, 1);
@@ -136,26 +138,37 @@ namespace calliBot2 {
             }
             setLed(C2Motor.links, false);
             setLed(C2Motor.rechts, false);
-            motorStop(C2Motor.beide, C2Stop.Bremsen);
+            //motorStop(C2Motor.beide, C2Stop.Bremsen);
+            pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x00, 0, C2Stop.Bremsen, 0, C2Stop.Bremsen]));
+            basic.showString("i")
         }
+        return c2IsBot2
     }
 
+    //% block="log" advanced=true weight=2
+    export function log() { return nLog }
+
+
     function writeMotor(nr: C2Motor, direction: C2Dir, speed: number) {
-        let buffer = pins.createBuffer(3)
+        //let buffer = pins.createBuffer(3)
         init()
-        buffer[1] = direction;
-        buffer[2] = speed;
+        //buffer[1] = direction;
+        //buffer[2] = speed;
         switch (nr) {
             case C2Motor.links:
-                buffer[0] = 0x00;
-                pins.i2cWriteBuffer(0x20, buffer);
+                basic.showString("l")
+                //buffer[0] = 0x00;
+                pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x00, direction, speed]));
                 break;
             case C2Motor.beide:
-                buffer[0] = 0x00;
-                pins.i2cWriteBuffer(0x20, buffer);
+                basic.showString("b")
+                //buffer[0] = 0x00;
+                pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x00, direction, speed, direction, speed]));
+                break
             case C2Motor.rechts:
-                buffer[0] = 0x02;
-                pins.i2cWriteBuffer(0x20, buffer);
+                basic.showString("r")
+                //buffer[0] = 0x02;
+                pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x02, direction, speed]));
                 break;
         }
     }
@@ -243,6 +256,7 @@ namespace calliBot2 {
         }
         buffer[1] = c2LedState;
         pins.i2cWriteBuffer(0x21, buffer);
+        nLog=buffer.toHex()
     }
 
     //% intensity.min=0 intensity.max=8 intensity.defl=6
@@ -321,7 +335,7 @@ namespace calliBot2 {
         }
         pins.i2cWriteBuffer(0x21, buffer);
         basic.pause(10);
-
+        nLog = buffer.toHex()
     }
 
     //% intensity.min=0 intensity.max=8
@@ -367,6 +381,7 @@ namespace calliBot2 {
                 pins.i2cWriteBuffer(0x22, buffer);
             }
         }
+        nLog = buffer.toHex()
     }
 
     //% block="V2 Stoßstange |%sensor| |%status"
