@@ -10,7 +10,8 @@
         "main.ts",
         "README.md",
         "callibot.ts",
-        "calli2bot.ts"
+        "calli2bot.ts",
+        "Knotech.ts"
     ],
     "testFiles": [
         "test.ts"
