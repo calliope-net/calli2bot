@@ -8,7 +8,7 @@ input.onButtonEvent(Button.A, input.buttonEventClick(), function () {
     lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 15, calliBot2.log())
 })
 input.onButtonEvent(Button.AB, input.buttonEventClick(), function () {
-	
+    basic.showString(calli2bot.setRgbLed1(0xffffff))
 })
 input.onButtonEvent(Button.B, input.buttonEventClick(), function () {
     hell += -1

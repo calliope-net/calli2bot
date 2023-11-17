@@ -130,4 +130,15 @@ PWM rechts (0..255) von Motor 2
     export enum eVersion { Typ, Firmware, Seriennummer }
 
 
+
+    //% group="Color"
+    //% block="V1 Schalte Beleuchtung Farbe $color" advanced=true
+    //% color.shadow="CallibotNumberPicker"   
+    export function setRgbLed1(color: number) {
+        let b = Buffer.create(4)
+        b.setNumber(NumberFormat.UInt32BE, 0, color)
+        return b.toHex()
+    }
+
+
 }// callibot.ts

@@ -175,9 +175,11 @@ namespace calli2bot {
         getLINE_SEN_VALUE(pRL: eRL) { return this.input_Spursensoren.get(pRL) }
 
 
+        // ==========  subcategory="fernsteuern"
+
         // ========== group="Fernsteuerung Motor (0 .. 128 .. 255) fahren und lenken"
 
-        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" advanced=true
+        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="fernsteuern"
         //% block="fahre mit Joystick %Calli2bot receivedNumber: %pUInt32LE" weight=6
         fahreJoystick(pUInt32LE: number) {
             let joyBuffer32 = Buffer.create(4)
@@ -254,7 +256,7 @@ namespace calli2bot {
 
         }
 
-        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" advanced=true
+        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="fernsteuern"
         //% block="%Calli2bot Protokoll lesen [fahren,lenken]" weight=2
         getLog(): string[] { return this.log }
 
