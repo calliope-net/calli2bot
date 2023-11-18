@@ -62,28 +62,70 @@ namespace calli2bot {
 
 
 
-        //% group="Motor (0 .. 255)" deprecated=true
-        //% block="Motoren %Calli2bot links %pPWM1 (0-255) %pRichtung1 rechts %pPWM2 %pRichtung2" weight=2
-        //% pwm1.min=0 pwm1.max=255 pwm1.defl=128 pwm2.min=0 pwm2.max=255 pwm2.defl=128
-        //% inlineInputMode=inline
-        private setMotoren(pwm1: number, pRichtung1: eDirection, pwm2: number, pRichtung2: eDirection) {
-            if (this.between(pwm1, 0, 255) && this.between(pwm2, 0, 255))
-                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, pRichtung1, pwm1, pRichtung2, pwm2]))
-            else
-                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, 0, 0, 0, 0]))
-        }
-
 
         // ========== group="LED"
 
+
+
         //% group="LED"
-        //% block="LED %Calli2bot %led %onoff || Helligkeit %pwm" weight=6
+        //% block="LED %Calli2bot %led %onoff || Helligkeit %pwm" weight=8
         //% onoff.shadow="toggleOnOff"
         //% pwm.min=1 pwm.max=16 pwm.defl=16
-        setLed(pLed: eLed, on: boolean, pwm?: number) {
-            if (!on) pwm = 0
-            else if (on && Number.isNaN(pwm)) pwm = 16
-            this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, pLed, pwm]))
+        setLed1(pLed: eLed, on: boolean, pwm?: number) {
+            if (!on)
+                pwm = 0 // LED aus schalten
+            else if (!this.between(pwm, 0, 16))
+                pwm = 16 // bei ungültigen Werten max. Helligkeit
+
+            if (pLed == eLed.redb) {
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, eLed.redl, pwm]))
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, eLed.redr, pwm]))
+            } else {
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, pLed, pwm]))
+            }
+        }
+
+
+        //% group="LED"
+        //% block="RGB LED %Calli2bot %color || ↖ %lv ↙ %lh ↘ %rh ↗ %rv" weight=7
+        //% color.shadow="callibot_colorPicker"
+        //% lv.shadow="toggleYesNo" lh.shadow="toggleYesNo" rh.shadow="toggleYesNo" rv.shadow="toggleYesNo"
+        //% inlineInputMode=inline expandableArgumentMode="toggle"
+        setRgbLed3(color: number, lv = true, lh = true, rh = true, rv = true) {
+            basic.showString(lv.toString())
+            let buffer = Buffer.create(5)
+            buffer[0] = eRegister.SET_LED
+            buffer.setNumber(NumberFormat.UInt32BE, 1, color) // [1]=0 [2]=r [3]=g [4]=b
+            buffer[2] = buffer[2] >>> 4 // durch 16, gültige rgb Werte für callibot: 0-15
+            buffer[3] = buffer[3] >>> 4
+            buffer[4] = buffer[4] >>> 4
+
+            if (lv) { buffer[1] = eRgbLed.LV; this.i2cWriteBuffer(buffer); basic.pause(10) }
+            if (lh) { buffer[1] = eRgbLed.LH; this.i2cWriteBuffer(buffer); basic.pause(10) }
+            if (rh) { buffer[1] = eRgbLed.RH; this.i2cWriteBuffer(buffer); basic.pause(10) }
+            if (rv) { buffer[1] = eRgbLed.RV; this.i2cWriteBuffer(buffer); basic.pause(10) }
+
+        }
+
+        //% group="LED"
+        //% block="RGB LED %Calli2bot %led %color" weight=6
+        //% color.shadow="callibot_colorPicker"
+        setRgbLed2(led: eRgbLed, color: number) {
+            let buffer = Buffer.create(5)
+            buffer[0] = eRegister.SET_LED
+            buffer.setNumber(NumberFormat.UInt32BE, 1, color) // [1]=0 [2]=r [3]=g [4]=b
+            buffer[2] = buffer[2] >>> 4 // durch 16, gültige rgb Werte für callibot: 0-15
+            buffer[3] = buffer[3] >>> 4
+            buffer[4] = buffer[4] >>> 4
+            if (led != eRgbLed.All) {
+                buffer[1] = led
+                this.i2cWriteBuffer(buffer)
+            } else // all leds, repeat 4 times
+                for (let i = 1; i < 5; i++) {
+                    buffer[1] = i
+                    this.i2cWriteBuffer(buffer)
+                    basic.pause(10)
+                }
         }
 
         //% group="LED"
@@ -104,27 +146,6 @@ namespace calli2bot {
                         basic.pause(10)
                     }
             }
-        }
-
-        //% group="LED"
-        //% block="RGB LED %Calli2bot %led %color" weight=2
-        //% color.shadow="callibot_colorPicker"
-        setRgbLed2(led: eRgbLed, color: number) {
-            let buffer = Buffer.create(5)
-            buffer[0] = eRegister.SET_LED
-            buffer.setNumber(NumberFormat.UInt32BE, 1, color) // [1]=0 [2]=r [3]=g [4]=b
-            buffer[2] = buffer[2] >>> 4 // durch 16, gültige rgb Werte für callibot: 0-15
-            buffer[3] = buffer[3] >>> 4
-            buffer[4] = buffer[4] >>> 4
-            if (led != eRgbLed.All) {
-                buffer[1] = led
-                this.i2cWriteBuffer(buffer)
-            } else // all leds, repeat 4 times
-                for (let i = 1; i < 5; i++) {
-                    buffer[1] = i
-                    this.i2cWriteBuffer(buffer)
-                    basic.pause(10)
-                }
         }
 
         // ========== group="Reset"
@@ -284,13 +305,24 @@ namespace calli2bot {
 
 
 
+        // ==========  subcategory="Fernsteuerung"
 
+        // ========== group="Motor (0 .. 255)" subcategory="Fernsteuerung"
 
-        // ==========  subcategory="fernsteuern"
+        //% group="Motor (0 .. 255)" subcategory="Fernsteuerung"
+        //% block="Motoren %Calli2bot links %pPWM1 (0-255) %pRichtung1 rechts %pPWM2 %pRichtung2" weight=2
+        //% pwm1.min=0 pwm1.max=255 pwm1.defl=128 pwm2.min=0 pwm2.max=255 pwm2.defl=128
+        //% inlineInputMode=inline
+        setMotoren(pwm1: number, pRichtung1: eDirection, pwm2: number, pRichtung2: eDirection) {
+            if (this.between(pwm1, 0, 255) && this.between(pwm2, 0, 255))
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, pRichtung1, pwm1, pRichtung2, pwm2]))
+            else
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, 0, 0, 0, 0]))
+        }
 
         // ========== group="Fernsteuerung Motor (0 .. 128 .. 255) fahren und lenken"
 
-        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="fernsteuern"
+        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="Fernsteuerung"
         //% block="fahre mit Joystick %Calli2bot receivedNumber: %pUInt32LE" weight=6
         fahreJoystick(pUInt32LE: number) {
             let joyBuffer32 = Buffer.create(4)
@@ -367,7 +399,7 @@ namespace calli2bot {
 
         }
 
-        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="fernsteuern"
+        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="Fernsteuerung"
         //% block="%Calli2bot Protokoll lesen [fahren,lenken]" weight=2
         getLog(): string[] { return this.log }
 

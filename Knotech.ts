@@ -1,120 +1,121 @@
 // Calli:bot 1 & 2 by Knotech
 // optimiert von M. Klein 7.2.23
 
-enum C2Motor {
-    links,
-    rechts,
-    beide
-}
-
-enum C2eMotor {
-    links,
-    rechts,
-    beide
-}
-
-enum C2Stop {
-    //% block="auslaufend"
-    Frei,
-    //% block="bremsend"
-    Bremsen
-}
-
-enum C2Servo {
-    //% block="Nr.1"
-    Servo1,
-    //% block="Nr.2"
-    Servo2
-}
-
-enum C2Sensor {
-    links,
-    rechts
-}
-
-enum C2eSensor {
-    links,
-    rechts
-}
-
-enum C2SensorStatus {
-    hell,
-    dunkel
-}
-
-enum C2Einheit {
-    cm,
-    mm
-}
-
-enum C2RgbLed {
-    //% block="links vorne"
-    LV,
-    //% block="rechts vorne"
-    RV,
-    //% block="links hinten"
-    LH,
-    //% block="rechts hinten"
-    RH,
-    //% block="alle"
-    All
-}
-
-enum C2RgbColor {
-    red = 0xff0000,
-    green = 0x00ff00,
-    blue = 0x0000ff,
-    yellow = 0xffff00,
-    violett = 0xa300ff,
-    aqua = 0x00ffdc,
-    white = 0xffffff,
-    black = 0x000000
-}
-
-enum C2Dir {
-    //% block="vorwärts"
-    vorwaerts = 0,
-    //% block="rückwärts"
-    rueckwaerts = 1
-}
-
-enum C2State {
-    aus,
-    an
-}
-
-enum C2SensorWait {
-    //% block="Entfernung (cm)"
-    distanceCm,
-    //% block="Entfernung (mm)"
-    distance,
-    //% block="Helligkeit"
-    brightness,
-    //% block="Temperatur"
-    temperature,
-    //% block="Lautstärke"
-    soundLevel,
-    //% block="Beschleunigung X"
-    accellX,
-    //% block="Beschleunigung Y"
-    accellY,
-    //% block="Beschleunigung Z"
-    accellZ
-}
-
-enum C2Check {
-    //% block="="
-    equal,
-    //% block="<"
-    lessThan,
-    //% block=">"
-    greaterThan
-}
-
-
-
 //% weight=50 color="#FF0000" icon="\uf013" block="Calli:bot 2"
 namespace calliBot2 {
+
+    export enum C2Motor {
+        links,
+        rechts,
+        beide
+    }
+
+    export enum C2eMotor {
+        links,
+        rechts,
+        beide
+    }
+
+    export enum C2Stop {
+        //% block="auslaufend"
+        Frei,
+        //% block="bremsend"
+        Bremsen
+    }
+
+    export enum C2Servo {
+        //% block="Nr.1"
+        Servo1,
+        //% block="Nr.2"
+        Servo2
+    }
+
+    export enum C2Sensor {
+        links,
+        rechts
+    }
+
+    export enum C2eSensor {
+        links,
+        rechts
+    }
+
+    export enum C2SensorStatus {
+        hell,
+        dunkel
+    }
+
+    export enum C2Einheit {
+        cm,
+        mm
+    }
+
+    export enum C2RgbLed {
+        //% block="links vorne"
+        LV,
+        //% block="rechts vorne"
+        RV,
+        //% block="links hinten"
+        LH,
+        //% block="rechts hinten"
+        RH,
+        //% block="alle"
+        All
+    }
+
+    export enum C2RgbColor {
+        red = 0xff0000,
+        green = 0x00ff00,
+        blue = 0x0000ff,
+        yellow = 0xffff00,
+        violett = 0xa300ff,
+        aqua = 0x00ffdc,
+        white = 0xffffff,
+        black = 0x000000
+    }
+
+    export enum C2Dir {
+        //% block="vorwärts"
+        vorwaerts = 0,
+        //% block="rückwärts"
+        rueckwaerts = 1
+    }
+
+    export enum C2State {
+        aus,
+        an
+    }
+
+    export enum C2SensorWait {
+        //% block="Entfernung (cm)"
+        distanceCm,
+        //% block="Entfernung (mm)"
+        distance,
+        //% block="Helligkeit"
+        brightness,
+        //% block="Temperatur"
+        temperature,
+        //% block="Lautstärke"
+        soundLevel,
+        //% block="Beschleunigung X"
+        accellX,
+        //% block="Beschleunigung Y"
+        accellY,
+        //% block="Beschleunigung Z"
+        accellZ
+    }
+
+    export enum C2Check {
+        //% block="="
+        equal,
+        //% block="<"
+        lessThan,
+        //% block=">"
+        greaterThan
+    }
+
+
+
 
     export let c2Initialized = 0;
     let c2LedState = 0;

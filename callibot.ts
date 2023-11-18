@@ -75,15 +75,17 @@ PWM rechts (0..255) von Motor 2
 
     export enum eLed {
         //% block="linke rote LED"
-        RED0 = 5,
+        redl = 5,
         //% block="rechte rote LED"
-        RED1 = 6,
+        redr = 6,
+        //% block="beide rote LED"
+        redb = 16,
         //% block="Spursucher LED links"
-        SPURL = 7,
+        spurl = 7,
         //% block="Spursucher LED rechts"
-        SPURR = 8,
+        spurr = 8,
         //% block="Power-ON LED"
-        ON = 0
+        poweron = 0
     }
 
     export enum eRgbLed {
@@ -154,7 +156,7 @@ PWM rechts (0..255) von Motor 2
     //% blockHidden=true
     //% shim=TD_ID
     //% value.fieldEditor="colornumber" value.fieldOptions.decompileLiterals=true
-    //% value.fieldOptions.colours='["#ff0000","#00ff00","#0000ff","#ffff00","#a300ff","#00ffdc","#ffffff","#000000"]'
+    //% value.fieldOptions.colours='["#000000","#0000ff","#00ff00","#00ffdc","#ff0000","#a300ff","#ffff00","#ffffff"]'
     //% value.fieldOptions.columns=4 value.fieldOptions.className='rgbColorPicker'  
     export function callibot_colorPicker(value: number) { return value }
     /* 
