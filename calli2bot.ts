@@ -6,6 +6,7 @@ namespace calli2bot {
         private i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
         private motorPower: boolean
         private log: string[]
+        private qLEDs = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         private input_Digital: number
         private input_Ultraschallsensor: number
@@ -68,20 +69,33 @@ namespace calli2bot {
 
 
         //% group="LED"
-        //% block="LED %Calli2bot %led %onoff || Helligkeit %pwm" weight=8
+        //% block="LED %Calli2bot %led %onoff || blinken %blink Helligkeit %pwm" weight=8
         //% onoff.shadow="toggleOnOff"
+        //% blink.shadow="toggleYesNo"
         //% pwm.min=1 pwm.max=16 pwm.defl=16
-        setLed1(pLed: eLed, on: boolean, pwm?: number) {
+        //% inlineInputMode=inline 
+        setLed1(pLed: eLed, on: boolean, blink = false, pwm?: number) {
             if (!on)
                 pwm = 0 // LED aus schalten
             else if (!this.between(pwm, 0, 16))
                 pwm = 16 // bei ungültigen Werten max. Helligkeit
 
             if (pLed == eLed.redb) {
-                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, eLed.redl, pwm]))
-                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, eLed.redr, pwm]))
+                this.setLed1(eLed.redl, on, blink, pwm) // 2 mal rekursiv aufrufen für beide rote LED
+                this.setLed1(eLed.redr, on, blink, pwm)
+                //this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, eLed.redl, pwm]))
+                //this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, eLed.redr, pwm]))
+                //} else if (blink && this.qLEDs.get(pLed) == pwm) {
+                //    pwm = 0
+                //    this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, pLed, pwm]))
             } else {
+                if (blink && this.qLEDs.get(pLed) == pwm) {
+                    pwm = 0
+                }
+
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, pLed, pwm]))
+                this.qLEDs.set(pLed, pwm)
+
             }
         }
 
@@ -92,7 +106,7 @@ namespace calli2bot {
         //% lv.shadow="toggleYesNo" lh.shadow="toggleYesNo" rh.shadow="toggleYesNo" rv.shadow="toggleYesNo"
         //% inlineInputMode=inline expandableArgumentMode="toggle"
         setRgbLed3(color: number, lv = true, lh = true, rh = true, rv = true) {
-            basic.showString(lv.toString())
+            //basic.showString(lv.toString())
             let buffer = Buffer.create(5)
             buffer[0] = eRegister.SET_LED
             buffer.setNumber(NumberFormat.UInt32BE, 1, color) // [1]=0 [2]=r [3]=g [4]=b
