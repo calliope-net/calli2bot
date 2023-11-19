@@ -6,7 +6,7 @@ namespace calli2bot {
         private i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
         private motorPower: boolean
         private log: string[]
-        private qLEDs = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        private qLEDs = [0, 0, 0, 0, 0, 0, 0, 0, 0] // LED Wert in Register 0x03 merken zum blinken
 
         private input_Digital: number
         private input_Ultraschallsensor: number
@@ -83,29 +83,23 @@ namespace calli2bot {
             if (pLed == eLed.redb) {
                 this.setLed1(eLed.redl, on, blink, pwm) // 2 mal rekursiv aufrufen für beide rote LED
                 this.setLed1(eLed.redr, on, blink, pwm)
-                //this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, eLed.redl, pwm]))
-                //this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, eLed.redr, pwm]))
-                //} else if (blink && this.qLEDs.get(pLed) == pwm) {
-                //    pwm = 0
-                //    this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, pLed, pwm]))
-            } else {
-                if (blink && this.qLEDs.get(pLed) == pwm) {
+            }
+            else {
+                if (blink && this.qLEDs.get(pLed) == pwm)
                     pwm = 0
-                }
-
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, pLed, pwm]))
                 this.qLEDs.set(pLed, pwm)
-
             }
         }
 
 
         //% group="LED"
-        //% block="RGB LED %Calli2bot %color || ↖ %lv ↙ %lh ↘ %rh ↗ %rv" weight=7
+        //% block="RGB LED %Calli2bot %color || ↖ %lv ↙ %lh ↘ %rh ↗ %rv blinken %blink" weight=7
         //% color.shadow="callibot_colorPicker"
         //% lv.shadow="toggleYesNo" lh.shadow="toggleYesNo" rh.shadow="toggleYesNo" rv.shadow="toggleYesNo"
+        //% blink.shadow="toggleYesNo"
         //% inlineInputMode=inline expandableArgumentMode="toggle"
-        setRgbLed3(color: number, lv = true, lh = true, rh = true, rv = true) {
+        setRgbLed3(color: number, lv = true, lh = true, rh = true, rv = true, blink = false) {
             //basic.showString(lv.toString())
             let buffer = Buffer.create(5)
             buffer[0] = eRegister.SET_LED
@@ -114,14 +108,29 @@ namespace calli2bot {
             buffer[3] = buffer[3] >>> 4
             buffer[4] = buffer[4] >>> 4
 
-            if (lv) { buffer[1] = eRgbLed.LV; this.i2cWriteBuffer(buffer); basic.pause(10) }
-            if (lh) { buffer[1] = eRgbLed.LH; this.i2cWriteBuffer(buffer); basic.pause(10) }
-            if (rh) { buffer[1] = eRgbLed.RH; this.i2cWriteBuffer(buffer); basic.pause(10) }
-            if (rv) { buffer[1] = eRgbLed.RV; this.i2cWriteBuffer(buffer); basic.pause(10) }
+            if (lv) this.setRgbLed31(eRgbLed.LV, buffer, blink)
+            if (lh) this.setRgbLed31(eRgbLed.LH, buffer, blink)
+            if (rh) this.setRgbLed31(eRgbLed.RH, buffer, blink)
+            if (rv) this.setRgbLed31(eRgbLed.RV, buffer, blink)
+
+            //if (lv) { buffer[1] = eRgbLed.LV; this.i2cWriteBuffer(buffer); basic.pause(10) }
+            //if (lh) { buffer[1] = eRgbLed.LH; this.i2cWriteBuffer(buffer); basic.pause(10) }
+            //if (rh) { buffer[1] = eRgbLed.RH; this.i2cWriteBuffer(buffer); basic.pause(10) }
+            //if (rv) { buffer[1] = eRgbLed.RV; this.i2cWriteBuffer(buffer); basic.pause(10) }
 
         }
 
-        //% group="LED"
+        // blinken
+        setRgbLed31(pRgbLed: eRgbLed, buffer: Buffer, blink: boolean) {
+            if (blink && this.qLEDs[pRgbLed] == buffer.getNumber(NumberFormat.UInt32BE, 1))
+                buffer.setNumber(NumberFormat.UInt32BE, 1, 0) // alle Farben aus
+            this.qLEDs[pRgbLed] = buffer.getNumber(NumberFormat.UInt32BE, 1)
+            buffer[1] = pRgbLed // Led-Index 1,2,3,4 für RGB
+            this.i2cWriteBuffer(buffer)
+            basic.pause(10)
+        }
+
+        //% group="LED" deprecated=true
         //% block="RGB LED %Calli2bot %led %color" weight=6
         //% color.shadow="callibot_colorPicker"
         setRgbLed2(led: eRgbLed, color: number) {
@@ -142,7 +151,7 @@ namespace calli2bot {
                 }
         }
 
-        //% group="LED"
+        //% group="LED" deprecated=true
         //% block="RGB LED %Calli2bot %led rot %red grün %green blau %blue" weight=4
         //% red.min=0 red.max=16 red.defl=16
         //% green.min=0 green.max=16 green.defl=16
@@ -385,18 +394,7 @@ namespace calli2bot {
                 fahren_rechts = Math.round(fahren_rechts * lenken_100_50 / 100)
             else
                 fahren_links = Math.round(fahren_links * lenken_100_50 / 100)
-            /* 
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 0, 3, joyHorizontal, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 4, 7, fahren_minus255_0_255, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 8, 11, fahren_links, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 12, 15, fahren_rechts, lcd16x2rgb.eAlign.right)
-            
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 0, 3, joyVertical, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 4, 7, lenken_255_0_255, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 8, 11, lenken_100_50, lcd16x2rgb.eAlign.right)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 13, 13, fahren_Richtung)
-                        lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 1, 15, 15, this.motorPower)
-             */
+
             if (this.motorPower)
                 this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
 

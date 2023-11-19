@@ -1,5 +1,5 @@
 
-//% color=#007F00 icon="\uf17b" block="Calli²bot" weight=29
+//% color=#007F00 icon="\uf17b" block="Calli²bot" weight=28
 //% groups='["beim Start","Motor (-100% .. 0 .. +100%)","LED","INPUT"]'
 namespace calli2bot
 /* 231030 calliope-net.github.io/callibot
@@ -133,24 +133,6 @@ PWM rechts (0..255) von Motor 2
 
     export enum eVersion { Typ, Firmware, Seriennummer }
 
-
-
-    //% group="Color"
-    //% block="V1 Schalte Beleuchtung Farbe $color" advanced=true
-    //% color.shadow="callibot_colorPicker"
-    function setRgbLed1(color: number) {
-
-
-        let bu = Buffer.create(4)
-        bu.setNumber(NumberFormat.UInt32BE, 0, color)
-        bu[1] = bu[1] >>> 4
-        bu[2] = bu[2] >>> 4
-        bu[3] = bu[3] >>> 4
-        //let n: number = (bu.getUint8(1) >>> 4) << 16 & (bu.getUint8(2) >>> 4) << 8 & (bu.getUint8(8) >>> 4)
-
-        //u.setNumber(NumberFormat.UInt32BE, 0, color)
-        return bu.toHex()
-    }
 
     //% blockId=callibot_colorPicker block="%value"
     //% blockHidden=true

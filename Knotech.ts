@@ -1,7 +1,7 @@
 // Calli:bot 1 & 2 by Knotech
 // optimiert von M. Klein 7.2.23
 
-//% weight=50 color="#FF0000" icon="\uf013" block="Calli:bot 2"
+//% weight=29 color="#FF0000" icon="\uf013" block="Calli:bot 2"
 namespace calliBot2 {
 
     export enum C2Motor {
