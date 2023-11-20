@@ -58,18 +58,34 @@ PWM rechts (0..255) von Motor 2
     }
 
 
-    //% group=""Motor (-100% .. 0 .. +100%)""
-    //% block="Pause %pause"
-    //% pause.shadow="calli2bot_ePause"
-    export function pause(pause: number) {
-        control.waitMicros(pause * 1000)
+    //% group="Motor (-100% .. 0 .. +100%)"
+    //% block="Pause %sekunden" weight=1
+    //% sekunden.shadow=calli2bot_ePause
+    export function pause(sekunden: number) {
+        control.waitMicros(sekunden * 1000000)
     }
 
     export enum ePause {
         //% block="1 Sekunde"
-        p1000 = 1000
+        p1 = 1,
+        //% block="2 Sekunden"
+        p2 = 2,
+        //% block="5 Sekunden"
+        p5 = 5,
+        //% block="10 Sekunden"
+        p10 = 10,
+        //% block="15 Sekunden"
+        p15 = 15,
+        //% block="20 Sekunden"
+        p20 = 20,
+        //% block="30 Sekunden"
+        p30 = 30,
+        //% block="45 Sekunden"
+        p45 = 45,
+        //% block="60 Sekunden"
+        p60 = 60
     }
-    //% blockId=calli2bot_ePause block="%pADDR" blockHidden=true
+    //% blockId=calli2bot_ePause block="%pPause" blockHidden=true
     export function calli2bot_ePause(pPause: ePause): number { return pPause }
 
 
