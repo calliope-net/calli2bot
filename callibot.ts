@@ -17,6 +17,8 @@ Code neu programmiert von Lutz Elßner im Oktober 2023
     export enum eADDR {
         CB2_x22 = 0x22 //, WR_MOTOR_x20 = 0x20, WR_LED_x21 = 0x21, RD_SENSOR_x21
     }
+    //% blockId=calli2bot_eADDR block="%pADDR" blockHidden=true
+    export function calli2bot_eADDR(pADDR: eADDR): number { return pADDR }
 
     export enum eRegister {
         // Write
@@ -31,7 +33,7 @@ Richtung (0:vorwärts, 1:rückwärts) von Motor 2
 PWM rechts (0..255) von Motor 2
         */
         SET_LED = 0x03, // Write: LED´s
-        RESET_ENCODER=0x05, // 2 Byte [0]=5 [1]= 1=links, 2=rechts, 3=beide
+        RESET_ENCODER = 0x05, // 2 Byte [0]=5 [1]= 1=links, 2=rechts, 3=beide
         // Read
         GET_INPUTS = 0x80, // Digitaleingänge (1 Byte 6 Bit)
         GET_INPUT_US = 0x81, // Ultraschallsensor (3 Byte 16 Bit)
@@ -45,9 +47,10 @@ PWM rechts (0..255) von Motor 2
 
     //% group="beim Start"
     //% block="i2c %pADDR beim Start || i2c-Check %ck"
+    //% pADDR.shadow="calli2bot_eADDR"
     //% ck.shadow="toggleOnOff" ck.defl=1
     //% blockSetVariable=Calli2bot
-    export function beimStart(pADDR: eADDR, ck?: boolean): Calli2bot {
+    export function beimStart(pADDR: number, ck?: boolean): Calli2bot {
         let c2 = new Calli2bot(pADDR, (ck ? true : false)) // optionaler boolean Parameter kann undefined sein
         calliBot2.c2Initialized = 1
         calliBot2.c2IsBot2 = 1
@@ -55,13 +58,28 @@ PWM rechts (0..255) von Motor 2
     }
 
 
+    //% group=""Motor (-100% .. 0 .. +100%)""
+    //% block="Pause %pause"
+    //% pause.shadow="calli2bot_ePause"
+    export function pause(pause: number) {
+        control.waitMicros(pause * 1000)
+    }
+
+    export enum ePause {
+        //% block="1 Sekunde"
+        p1000 = 1000
+    }
+    //% blockId=calli2bot_ePause block="%pADDR" blockHidden=true
+    export function calli2bot_ePause(pPause: ePause): number { return pPause }
+
+
     export enum eMotor {
-        //% block="beide"
-        beide = 0b11,
         //% block="links"
         m1 = 0b01,
         //% block="rechts"
-        m2 = 0b10
+        m2 = 0b10,
+        //% block="beide"
+        beide = 0b11
     }
 
     export enum eRL { rechts = 0, links = 1 } // Index im Array

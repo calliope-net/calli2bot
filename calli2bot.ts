@@ -63,7 +63,6 @@ namespace calli2bot {
 
 
 
-
         // ========== group="LED"
 
 
@@ -278,6 +277,7 @@ namespace calli2bot {
 
         //% group="Encoder 2*32 Bit [l,r]" advanced=true
         //% block="Encoder %Calli2bot Zähler löschen %encoder"
+        //% encoder.defl=calli2bot.eMotor.beide
         resetEncoder(encoder: eMotor) {
             /* let bitMask = 0;
             switch (encoder) {
