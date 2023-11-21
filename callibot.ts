@@ -68,8 +68,6 @@ PWM rechts (0..255) von Motor 2
     export enum ePause {
         //% block="1 Sekunde"
         p1 = 1,
-        //% block="0,5 Sekunden"
-        p0 = 0.5,
         //% block="2 Sekunden"
         p2 = 2,
         //% block="5 Sekunden"
