@@ -138,7 +138,7 @@ PWM rechts (0..255) von Motor 2
     }
 
     export enum eINPUTS {
-        //% block="Spursucher aus"
+        //% block="Spursucher dunkel"
         sp0, //= 0b00000000,
         //% block="Spursucher rechts"
         sp1, //= 0b00000001,
