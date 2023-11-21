@@ -227,6 +227,7 @@ namespace calli2bot {
 
         //% group="INPUT Ultraschallsensor" subcategory="Sensoren"
         //% block="%Calli2bot Entfernung %pVergleich %vergleich cm" weight=2
+        //% vergleich.min=1 vergleich.max=50 vergleich.defl=15
         bitINPUT_US(pVergleich: eVergleich, vergleich: number) {
             switch (pVergleich) {
                 case eVergleich.gt: return this.input_Ultraschallsensor / 10 > vergleich
