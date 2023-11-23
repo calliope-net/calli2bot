@@ -7,6 +7,7 @@ namespace calli2bot {
         private motorPower: boolean
         private log: string[]
         private qLEDs = [0, 0, 0, 0, 0, 0, 0, 0, 0] // LED Wert in Register 0x03 merken zum blinken
+        private qMotoran: boolean // für seite4StopandGo()
 
         private input_Digital: number
         private input_Ultraschallsensor: number
@@ -415,14 +416,14 @@ namespace calli2bot {
         }
 
         //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="Fernsteuerung"
-        //% block="%Calli2bot Protokoll lesen %1 [fahren,lenken]" weight=2
-        //% i:min=0 i:max=1
-        getLog2(i: number): string { return this.log.get(i) }
-
-        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="Fernsteuerung"
         //% block="%Calli2bot Protokoll lesen [fahren,lenken]" weight=2 deprecated=true
         getLog(): string[] { return this.log }
 
+
+        //% group="Protokoll lesen [fahren,lenken]" subcategory="Fernsteuerung"
+        //% block="%Calli2bot Protokoll Zeile %1" weight=2
+        //% index.min=0 index.max=1
+        getLog2(index: number): string { return this.log.get(index) }
 
 
 
@@ -477,8 +478,40 @@ namespace calli2bot {
 
 
 
+
+        // ========== subcategory=Codekarten
+
+        // ========== 
+        //% group="Seite 4 Stop and Go (klatschen)" subcategory=Codekarten
+        //% block="Stop and Go %Calli2bot Lautstärke %laut Motoren l %pwm1 \\% r %pwm2 \\%"
+        //% laut.min=0 laut.max=255 laut.defl=100
+        //% pwm1.shadow="speedPicker" pwm1.defl=80
+        //% pwm2.shadow="speedPicker" pwm2.defl=80
+        seite4StopandGo(laut: number, pwm1: number, pwm2: number) {
+            if (input.soundLevel() > laut) {
+                this.qMotoran = !(this.qMotoran)
+                // nur bei Änderung an i2c senden
+                if (this.qMotoran)
+                    this.setMotoren2(pwm1, pwm2)
+                else
+                    this.setMotoren2(0, 0)
+            }
+            //let laut = input.soundLevel()
+            //if (input.soundLevel() < laut) {
+            //    if (this.qMotoran) {
+            //        this.setMotoren2(pwm1, pwm2)
+            //    }
+            //} else {
+            //lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 10, 14, laut, lcd16x2rgb.eAlign.right)
+            //    this.qMotoran = !(this.qMotoran)
+            //    this.setMotoren2(0, 0)
+            //}
+        }
+
+
+
         // ========== private
-     
+
         private i2cWriteBuffer(buf: Buffer) { // repeat funktioniert nicht
             if (this.i2cError == 0) { // vorher kein Fehler
                 this.i2cError = pins.i2cWriteBuffer(this.i2cADDR, buf)
