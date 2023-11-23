@@ -1,126 +1,113 @@
 // Calli:bot 1 & 2 by Knotech
 // optimiert von M. Klein 7.2.23
+// i2c optimiert (writeMotor); advanced Blöcke (knotechgmbh/Callibot2E) ergänzt von L.Elßner Nov 2023
+enum C2Motor {
+    links,
+    rechts,
+    beide
+}
+
+enum C2Stop {
+    //% block="auslaufend"
+    Frei,
+    //% block="bremsend"
+    Bremsen
+}
+
+enum C2Servo {
+    //% block="Nr.1"
+    Servo1,
+    //% block="Nr.2"
+    Servo2
+}
+
+enum C2Sensor {
+    links,
+    rechts
+}
+
+enum C2SensorStatus {
+    hell,
+    dunkel
+}
+
+enum C2Einheit {
+    cm,
+    mm
+}
+
+enum C2RgbLed {
+    //% block="links vorne"
+    LV,
+    //% block="rechts vorne"
+    RV,
+    //% block="links hinten"
+    LH,
+    //% block="rechts hinten"
+    RH,
+    //% block="alle"
+    All
+}
+
+enum C2RgbColor {
+    red = 0xff0000,
+    green = 0x00ff00,
+    blue = 0x0000ff,
+    yellow = 0xffff00,
+    violett = 0xa300ff,
+    aqua = 0x00ffdc,
+    white = 0xffffff,
+    black = 0x000000
+}
+
+enum C2Dir {
+    //% block="vorwärts"
+    vorwaerts = 0,
+    //% block="rückwärts"
+    rueckwaerts = 1
+}
+
+enum C2State {
+    aus,
+    an
+}
+
+enum C2SensorWait {
+    //% block="Entfernung (cm)"
+    distanceCm,
+    //% block="Entfernung (mm)"
+    distance,
+    //% block="Helligkeit"
+    brightness,
+    //% block="Temperatur"
+    temperature,
+    //% block="Lautstärke"
+    soundLevel,
+    //% block="Beschleunigung X"
+    accellX,
+    //% block="Beschleunigung Y"
+    accellY,
+    //% block="Beschleunigung Z"
+    accellZ
+}
+
+enum C2Check {
+    //% block="="
+    equal,
+    //% block="<"
+    lessThan,
+    //% block=">"
+    greaterThan
+}
+
+
 
 //% weight=29 color="#FF0000" icon="\uf013" block="Calli:bot 2"
 namespace calliBot2 {
 
-    export enum C2Motor {
-        links,
-        rechts,
-        beide
-    }
-
-    export enum C2eMotor {
-        links,
-        rechts,
-        beide
-    }
-
-    export enum C2Stop {
-        //% block="auslaufend"
-        Frei,
-        //% block="bremsend"
-        Bremsen
-    }
-
-    export enum C2Servo {
-        //% block="Nr.1"
-        Servo1,
-        //% block="Nr.2"
-        Servo2
-    }
-
-    export enum C2Sensor {
-        links,
-        rechts
-    }
-
-    export enum C2eSensor {
-        links,
-        rechts
-    }
-
-    export enum C2SensorStatus {
-        hell,
-        dunkel
-    }
-
-    export enum C2Einheit {
-        cm,
-        mm
-    }
-
-    export enum C2RgbLed {
-        //% block="links vorne"
-        LV,
-        //% block="rechts vorne"
-        RV,
-        //% block="links hinten"
-        LH,
-        //% block="rechts hinten"
-        RH,
-        //% block="alle"
-        All
-    }
-
-    export enum C2RgbColor {
-        red = 0xff0000,
-        green = 0x00ff00,
-        blue = 0x0000ff,
-        yellow = 0xffff00,
-        violett = 0xa300ff,
-        aqua = 0x00ffdc,
-        white = 0xffffff,
-        black = 0x000000
-    }
-
-    export enum C2Dir {
-        //% block="vorwärts"
-        vorwaerts = 0,
-        //% block="rückwärts"
-        rueckwaerts = 1
-    }
-
-    export enum C2State {
-        aus,
-        an
-    }
-
-    export enum C2SensorWait {
-        //% block="Entfernung (cm)"
-        distanceCm,
-        //% block="Entfernung (mm)"
-        distance,
-        //% block="Helligkeit"
-        brightness,
-        //% block="Temperatur"
-        temperature,
-        //% block="Lautstärke"
-        soundLevel,
-        //% block="Beschleunigung X"
-        accellX,
-        //% block="Beschleunigung Y"
-        accellY,
-        //% block="Beschleunigung Z"
-        accellZ
-    }
-
-    export enum C2Check {
-        //% block="="
-        equal,
-        //% block="<"
-        lessThan,
-        //% block=">"
-        greaterThan
-    }
-
-
-
-
     export let c2Initialized = 0;
     let c2LedState = 0;
     export let c2IsBot2 = 0;
-    export let nLog: string = ""
 
     /**
     * Custom color picker
@@ -152,13 +139,9 @@ namespace calliBot2 {
             setLed(C2Motor.rechts, false);
             //motorStop(C2Motor.beide, C2Stop.Bremsen);
             pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x00, 0, C2Stop.Bremsen, 0, C2Stop.Bremsen]));
-            basic.showString("i")
         }
         return c2IsBot2
     }
-
-    //% block="log" advanced=true weight=2
-    export function log() { return nLog }
 
 
     function writeMotor(nr: C2Motor, direction: C2Dir, speed: number) {
@@ -168,20 +151,17 @@ namespace calliBot2 {
         //buffer[2] = speed;
         switch (nr) {
             case C2Motor.links:
-                basic.showString("l")
                 //buffer[0] = 0x00;
-                pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x00, direction, speed]));
-                break;
+                pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x00, direction, speed]))
+                break
             case C2Motor.beide:
-                basic.showString("b")
                 //buffer[0] = 0x00;
-                pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x00, direction, speed, direction, speed]));
+                pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x00, direction, speed, direction, speed]))
                 break
             case C2Motor.rechts:
-                basic.showString("r")
                 //buffer[0] = 0x02;
-                pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x02, direction, speed]));
-                break;
+                pins.i2cWriteBuffer(0x20, Buffer.fromArray([0x02, direction, speed]))
+                break
         }
     }
 
@@ -268,7 +248,6 @@ namespace calliBot2 {
         }
         buffer[1] = c2LedState;
         pins.i2cWriteBuffer(0x21, buffer);
-        nLog = buffer.toHex()
     }
 
     //% intensity.min=0 intensity.max=8 intensity.defl=6
@@ -347,7 +326,6 @@ namespace calliBot2 {
         }
         pins.i2cWriteBuffer(0x21, buffer);
         basic.pause(10);
-        nLog = buffer.toHex()
     }
 
     //% intensity.min=0 intensity.max=8
@@ -393,7 +371,6 @@ namespace calliBot2 {
                 pins.i2cWriteBuffer(0x22, buffer);
             }
         }
-        nLog = buffer.toHex()
     }
 
     //% blockId=c2eStopAll block="Alles abschalten"
@@ -406,16 +383,16 @@ namespace calliBot2 {
 
     //% blockId=c2eResetEncoder block="Lösche Encoder-Zähler |%encoder"
     //% advanced=true
-    export function resetEncoder(encoder: C2eMotor) {
+    export function resetEncoder(encoder: C2Motor) {
         let bitMask = 0;
         switch (encoder) {
-            case C2eMotor.links:
+            case C2Motor.links:
                 bitMask = 1;
                 break;
-            case C2eMotor.rechts:
+            case C2Motor.rechts:
                 bitMask = 2;
                 break;
-            case C2eMotor.beide:
+            case C2Motor.beide:
                 bitMask = 3;
                 break;
         }
@@ -506,7 +483,7 @@ namespace calliBot2 {
 
     //% blockID=c2eEncoder color="#00C040" block="Encoderwert |%encoder"
     //% advanced = true
-    export function encoderValue(encoder: C2eSensor): number {
+    export function encoderValue(encoder: C2Sensor): number {
         let result: number;
         let index: number;
 
@@ -514,7 +491,7 @@ namespace calliBot2 {
         wbuffer[0] = 0x91;
         pins.i2cWriteBuffer(0x22, wbuffer);
         let buffer = pins.i2cReadBuffer(0x22, 9);
-        if (encoder == C2eSensor.links) {
+        if (encoder == C2Sensor.links) {
             index = 1;
         }
         else {
@@ -545,14 +522,14 @@ namespace calliBot2 {
 
     //% blockID=c2eLineRaw color="#00C040" block="Spursensor $sensor analog (mV)"
     //% advanced = true
-    export function lineSensorRaw(sensor: C2eSensor): number {
+    export function lineSensorRaw(sensor: C2Sensor): number {
         let wBuffer = pins.createBuffer(1);
         let sensorValue: number;
 
         wBuffer[0] = 0x84;
         pins.i2cWriteBuffer(0x22, wBuffer);
         let buffer = pins.i2cReadBuffer(0x22, 5);
-        if (sensor == C2eSensor.links) {
+        if (sensor == C2Sensor.links) {
             sensorValue = buffer[2] * 256 + buffer[1];
         }
         else {
