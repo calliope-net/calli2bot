@@ -4,10 +4,10 @@ namespace calli2bot {
         private readonly i2cADDR: eADDR
         private readonly i2cCheck: boolean // i2c-Check
         private i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
-        private motorPower: boolean
-        private log: string[]
+        private qMotorPower: boolean
+        private qLog: string[] = [""]
         private qLEDs = [0, 0, 0, 0, 0, 0, 0, 0, 0] // LED Wert in Register 0x03 merken zum blinken
-        private qMotoran: boolean // für seite4StopandGo()
+        private qMotoran: boolean = false // für seite4StopandGo()
 
         private input_Digital: number
         private input_Ultraschallsensor: number
@@ -28,13 +28,13 @@ namespace calli2bot {
         //% pwm1.shadow="speedPicker" pwm1.defl=0
         //% pwm2.shadow="speedPicker" pwm2.defl=0
         setMotoren2(pwm1: number, pwm2: number) {
-            this.log = [pwm1 + " " + pwm2, ""]
+            this.qLog = [pwm1 + " " + pwm2, ""]
             let pRichtung1 = (pwm1 < 0 ? eDirection.r : eDirection.v)
             let pRichtung2 = (pwm2 < 0 ? eDirection.r : eDirection.v)
             pwm1 = Math.trunc(Math.abs(pwm1) * 255 / 100)
             pwm2 = Math.trunc(Math.abs(pwm2) * 255 / 100)
 
-            this.log[1] = pwm1 + " " + pwm2
+            this.qLog[1] = pwm1 + " " + pwm2
 
             this.setMotoren(pwm1, pRichtung1, pwm2, pRichtung2)
 
@@ -177,7 +177,7 @@ namespace calli2bot {
         //% block="alles aus %Calli2bot Motor, LEDs, Servo"
         i2cRESET_OUTPUTS() {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.RESET_OUTPUTS]))
-            this.motorPower = false
+            this.qMotorPower = false
         }
 
 
@@ -368,8 +368,8 @@ namespace calli2bot {
             //let joyButton = joyBuffer32.getUint8(3) == 0 ? false : true
             // Motor Power ON ...
             if (joyBuffer32.getUint8(3) == 1)
-                this.motorPower = true // Motor Power ON
-            else if (this.motorPower)
+                this.qMotorPower = true // Motor Power ON
+            else if (this.qMotorPower)
                 this.i2cRESET_OUTPUTS() // this.motorPower = false
 
             // fahren
@@ -397,19 +397,19 @@ namespace calli2bot {
             else
                 fahren_links = Math.round(fahren_links * lenken_100_50 / 100)
 
-            if (this.motorPower)
+            if (this.qMotorPower)
                 this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
 
-            this.log = ["", ""]
-            this.log[0] = format4r(joyHorizontal)
+            this.qLog = ["", ""]
+            this.qLog[0] = format4r(joyHorizontal)
                 + format4r(fahren_minus255_0_255)
                 + format4r(fahren_links)
                 + format4r(fahren_rechts)
-            this.log[1] = format4r(joyVertical)
+            this.qLog[1] = format4r(joyVertical)
                 + format4r(lenken_255_0_255)
                 + format4r(lenken_100_50)
                 + " " + fahren_Richtung.toString().substr(0, 1)
-                + " " + this.motorPower.toString().substr(0, 1)
+                + " " + this.qMotorPower.toString().substr(0, 1)
             //+ " " + format(fahren_Richtung, 1)
             //+ " " + format(this.motorPower, 1)
 
@@ -417,13 +417,18 @@ namespace calli2bot {
 
         //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="Fernsteuerung"
         //% block="%Calli2bot Protokoll lesen [fahren,lenken]" weight=2 deprecated=true
-        getLog(): string[] { return this.log }
+        getLog(): string[] { return this.qLog }
 
 
         //% group="Protokoll lesen [fahren,lenken]" subcategory="Fernsteuerung"
         //% block="%Calli2bot Protokoll Zeile %1" weight=2
         //% index.min=0 index.max=1
-        getLog2(index: number): string { return this.log.get(index) }
+        getLog2(index: number): string {
+            if (this.qLog != undefined && index < this.qLog.length && index >= 0)
+                return this.qLog.get(index)
+            else
+                return index.toString()
+        }
 
 
 
@@ -488,24 +493,26 @@ namespace calli2bot {
         //% pwm1.shadow="speedPicker" pwm1.defl=80
         //% pwm2.shadow="speedPicker" pwm2.defl=80
         seite4StopandGo(laut: number, pwm1: number, pwm2: number) {
-            if (input.soundLevel() > laut) {
+            /* if (input.soundLevel() > laut) {
                 this.qMotoran = !(this.qMotoran)
                 // nur bei Änderung an i2c senden
                 if (this.qMotoran)
                     this.setMotoren2(pwm1, pwm2)
                 else
                     this.setMotoren2(0, 0)
-            }
+            } */
             //let laut = input.soundLevel()
-            //if (input.soundLevel() < laut) {
-            //    if (this.qMotoran) {
-            //        this.setMotoren2(pwm1, pwm2)
-            //    }
-            //} else {
-            //lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 10, 14, laut, lcd16x2rgb.eAlign.right)
-            //    this.qMotoran = !(this.qMotoran)
-            //    this.setMotoren2(0, 0)
-            //}
+            if (input.soundLevel() < laut) {
+                if (this.qMotoran) {
+                    this.setMotoren2(pwm1, pwm2)
+                }
+            } else {
+                //lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 10, 14, laut, lcd16x2rgb.eAlign.right)
+                this.qMotoran = !(this.qMotoran)
+                this.setMotoren2(0, 0)
+            }
+            this.qLog = [this.qMotoran.toString().substr(0, 1)]
+
         }
 
 
