@@ -61,8 +61,8 @@ PWM rechts (0..255) von Motor 2
     //% group="Motor (-100% .. 0 .. +100%)"
     //% block="Pause %sekunden" weight=1
     //% sekunden.shadow=calli2bot_ePause
-    export function pause(sekunden: number) {
-        control.waitMicros(sekunden * 100000)
+    export function pause(zehntelsekunden: number) {
+        control.waitMicros(zehntelsekunden * 100000)
     }
 
     export enum ePause {
@@ -188,5 +188,23 @@ PWM rechts (0..255) von Motor 2
             white = 0xffffff,
             black = 0x000000
         } */
+
+
+
+
+
+    // ========== private
+
+    export function between(i0: number, i1: number, i2: number): boolean { return (i0 >= i1 && i0 <= i2) }
+
+    export function sign(i: number, e: number = 7): number {
+        if (i < 2 ** e) return i
+        else return -((~i & ((2 ** e) - 1)) + 1)
+    }
+    export function format4r(pValue: any) {
+        let pText = convertToText(pValue)
+        return "    ".substr(0, 4 - pText.length) + pText
+    }
+
 
 }// callibot.ts

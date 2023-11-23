@@ -50,7 +50,7 @@ namespace calli2bot {
             let pRichtung = (pwm < 0 ? eDirection.r : eDirection.v)
             pwm = Math.trunc(Math.abs(pwm) * 255 / 100)
 
-            if (this.between(pwm, 0, 255)) {
+            if (between(pwm, 0, 255)) {
                 //this.motorPower = true
             } else  // falscher Parameter -> beide Stop
                 pMotor = eMotor.beide; pwm = 0
@@ -76,7 +76,7 @@ namespace calli2bot {
         setLed1(pLed: eLed, on: boolean, blink = false, pwm?: number) {
             if (!on)
                 pwm = 0 // LED aus schalten
-            else if (!this.between(pwm, 0, 16))
+            else if (!between(pwm, 0, 16))
                 pwm = 16 // bei ungültigen Werten max. Helligkeit
 
             if (pLed == eLed.redb) {
@@ -338,7 +338,7 @@ namespace calli2bot {
         //% pwm1.min=0 pwm1.max=255 pwm1.defl=128 pwm2.min=0 pwm2.max=255 pwm2.defl=128
         //% inlineInputMode=inline
         setMotoren(pwm1: number, pRichtung1: eDirection, pwm2: number, pRichtung2: eDirection) {
-            if (this.between(pwm1, 0, 255) && this.between(pwm2, 0, 255))
+            if (between(pwm1, 0, 255) && between(pwm2, 0, 255))
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, pRichtung1, pwm1, pRichtung2, pwm2]))
             else
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, 0, 0, 0, 0]))
@@ -373,7 +373,7 @@ namespace calli2bot {
 
             // fahren
             let fahren_minus255_0_255: number //= this.change(joyHorizontal) // (0.. 128.. 255) -> (-255 .. 0 .. +255)
-            let signed_128_0_127 = this.sign(joyHorizontal)
+            let signed_128_0_127 = sign(joyHorizontal)
             if (signed_128_0_127 < 0)
                 fahren_minus255_0_255 = 2 * (128 + signed_128_0_127) // (u) 128 .. 255 -> (s) -128 .. -1  ->   0 .. 127
             else
@@ -387,7 +387,7 @@ namespace calli2bot {
             let fahren_rechts = fahren_0_255
 
             // lenken
-            let lenken_255_0_255 = this.sign(joyVertical)
+            let lenken_255_0_255 = sign(joyVertical)
             let lenken_100_50 = Math.round(Math.map(Math.abs(lenken_255_0_255), 0, 128, 50, 100))
 
             // lenken Richtung
@@ -400,21 +400,29 @@ namespace calli2bot {
                 this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
 
             this.log = ["", ""]
-            this.log[0] = this.format(joyHorizontal, 4, true)
-                + this.format(fahren_minus255_0_255, 4, true)
-                + this.format(fahren_links, 4, true)
-                + this.format(fahren_rechts, 4, true)
-            this.log[1] = this.format(joyVertical, 4, true)
-                + this.format(lenken_255_0_255, 4, true)
-                + this.format(lenken_100_50, 4, true)
-                + " " + this.format(fahren_Richtung, 1)
-                + " " + this.format(this.motorPower, 1)
+            this.log[0] = format4r(joyHorizontal)
+                + format4r(fahren_minus255_0_255)
+                + format4r(fahren_links)
+                + format4r(fahren_rechts)
+            this.log[1] = format4r(joyVertical)
+                + format4r(lenken_255_0_255)
+                + format4r(lenken_100_50)
+                + " " + fahren_Richtung.toString().substr(0, 1)
+                + " " + this.motorPower.toString().substr(0, 1)
+            //+ " " + format(fahren_Richtung, 1)
+            //+ " " + format(this.motorPower, 1)
 
         }
 
         //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="Fernsteuerung"
-        //% block="%Calli2bot Protokoll lesen [fahren,lenken]" weight=2
+        //% block="%Calli2bot Protokoll lesen %1 [fahren,lenken]" weight=2
+        //% i:min=0 i:max=1
+        getLog2(i: number): string { return this.log.get(i) }
+
+        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="Fernsteuerung"
+        //% block="%Calli2bot Protokoll lesen [fahren,lenken]" weight=2 deprecated=true
         getLog(): string[] { return this.log }
+
 
 
 
@@ -470,30 +478,7 @@ namespace calli2bot {
 
 
         // ========== private
-
-        private between(i0: number, i1: number, i2: number): boolean { return (i0 >= i1 && i0 <= i2) }
-
-        private sign(i: number, e: number = 7): number {
-            if (i < 2 ** e) return i
-            else return -((~i & ((2 ** e) - 1)) + 1)
-        }
-
-        private format(pValue: any, pLength: number, pFormat: boolean = false) {
-            let pText = convertToText(pValue)
-            if (pText.length > pLength) { return pText.substr(0, pLength) }
-            else if (pText.length < pLength && !pFormat) { return pText + this.replicate(" ", pLength - pText.length) }
-            else if (pText.length < pLength && pFormat) { return this.replicate(" ", pLength - pText.length) + pText }
-            else { return pText }
-        }
-
-        private replicate(pChar: string, pLength: number) {
-            let s: string = ""
-            if (pChar.length > 0 && pLength > 0)
-                while (s.length < pLength)
-                    s = s + pChar
-            return s
-        }
-
+     
         private i2cWriteBuffer(buf: Buffer) { // repeat funktioniert nicht
             if (this.i2cError == 0) { // vorher kein Fehler
                 this.i2cError = pins.i2cWriteBuffer(this.i2cADDR, buf)
