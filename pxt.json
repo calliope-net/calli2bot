@@ -11,7 +11,8 @@
         "README.md",
         "callibot.ts",
         "calli2bot.ts",
-        "Knotech.ts"
+        "Knotech.ts",
+        "callicode.ts"
     ],
     "testFiles": [
         "test.ts"
