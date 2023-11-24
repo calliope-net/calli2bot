@@ -496,7 +496,7 @@ namespace calli2bot {
 
 
         //% group="2 fahren und drehen" subcategory=Beispiele
-        //% block="Motoren %Calli2bot (1/10s) fahren %zsf drehen %zsd nach %rl" weight=8
+        //% block="Motoren %Calli2bot ⅒Sekunde fahren %zsf drehen %zsd nach %rl" weight=8
         //% zsf.min=0 zsf.max=100 zsf.defl=50
         //% zsd.min=0 zsd.max=100 zsd.defl=20
         seite2Motor(zsf: number, zsd: number, rl: eRL) {
