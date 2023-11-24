@@ -77,31 +77,6 @@ namespace calli2bot {
 
 
         //% group="LED"
-        //% block="LED %Calli2bot %led %onoff || blinken %blink Helligkeit %pwm" weight=8
-        //% onoff.shadow="toggleOnOff"
-        //% blink.shadow="toggleYesNo"
-        //% pwm.min=1 pwm.max=16 pwm.defl=16
-        //% inlineInputMode=inline 
-        setLed1(pLed: eLed, on: boolean, blink = false, pwm?: number) {
-            if (!on)
-                pwm = 0 // LED aus schalten
-            else if (!between(pwm, 0, 16))
-                pwm = 16 // bei ungültigen Werten max. Helligkeit
-
-            if (pLed == eLed.redb) {
-                this.setLed1(eLed.redl, on, blink, pwm) // 2 mal rekursiv aufrufen für beide rote LED
-                this.setLed1(eLed.redr, on, blink, pwm)
-            }
-            else {
-                if (blink && this.qLEDs.get(pLed) == pwm)
-                    pwm = 0
-                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, pLed, pwm]))
-                this.qLEDs.set(pLed, pwm)
-            }
-        }
-
-
-        //% group="LED"
         //% block="RGB LED %Calli2bot %color || ↖ %lv ↙ %lh ↘ %rh ↗ %rv blinken %blink" weight=7
         //% color.shadow="callibot_colorPicker"
         //% lv.shadow="toggleYesNo" lh.shadow="toggleYesNo" rh.shadow="toggleYesNo" rv.shadow="toggleYesNo"
@@ -179,6 +154,32 @@ namespace calli2bot {
             }
         }
 
+        //% group="LED"
+        //% block="LED %Calli2bot %led %onoff || blinken %blink Helligkeit %pwm" weight=2
+        //% onoff.shadow="toggleOnOff"
+        //% blink.shadow="toggleYesNo"
+        //% pwm.min=1 pwm.max=16 pwm.defl=16
+        //% inlineInputMode=inline 
+        setLed1(pLed: eLed, on: boolean, blink = false, pwm?: number) {
+            if (!on)
+                pwm = 0 // LED aus schalten
+            else if (!between(pwm, 0, 16))
+                pwm = 16 // bei ungültigen Werten max. Helligkeit
+
+            if (pLed == eLed.redb) {
+                this.setLed1(eLed.redl, on, blink, pwm) // 2 mal rekursiv aufrufen für beide rote LED
+                this.setLed1(eLed.redr, on, blink, pwm)
+            }
+            else {
+                if (blink && this.qLEDs.get(pLed) == pwm)
+                    pwm = 0
+                this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_LED, pLed, pwm]))
+                this.qLEDs.set(pLed, pwm)
+            }
+        }
+
+
+
         // ========== group="Reset"
 
         //% group="Reset"
@@ -237,10 +238,10 @@ namespace calli2bot {
         //% group="INPUT Ultraschallsensor" subcategory="Sensoren"
         //% block="%Calli2bot Entfernung %pVergleich %vergleich cm" weight=2
         //% vergleich.min=1 vergleich.max=50 vergleich.defl=15
-        bitINPUT_US(pVergleich: eVergleich, vergleich: number) {
+        bitINPUT_US(pVergleich: eVergleich, cm: number) {
             switch (pVergleich) {
-                case eVergleich.gt: return this.input_Ultraschallsensor / 10 > vergleich
-                case eVergleich.lt: return this.input_Ultraschallsensor / 10 < vergleich
+                case eVergleich.gt: return this.input_Ultraschallsensor / 10 > cm
+                case eVergleich.lt: return this.input_Ultraschallsensor / 10 < cm
                 default: return false
             }
         }
@@ -494,9 +495,10 @@ namespace calli2bot {
 
         // ========== subcategory=Beispiele
 
+        // ========== group="2 fahren und drehen" subcategory=Beispiele
 
         //% group="2 fahren und drehen" subcategory=Beispiele
-        //% block="Motoren %Calli2bot ⅒Sekunde fahren %zsf drehen %zsd nach %rl" weight=8
+        //% block="Motoren %Calli2bot fahren %zsf ⅒s • drehen %zsd ⅒s • nach %rl" weight=8
         //% zsf.min=0 zsf.max=100 zsf.defl=50
         //% zsd.min=0 zsd.max=100 zsd.defl=20
         seite2Motor(zsf: number, zsd: number, rl: eRL) {
@@ -509,11 +511,10 @@ namespace calli2bot {
         }
 
 
+        // ========== group="4 Lautstärke, Stop and Go" subcategory=Beispiele
 
-        // ========== 
         //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
         //% block="Stop and Go %Calli2bot Motoren l %pwm1 \\% r %pwm2 \\%" weight=2
-        //% laut.min=0 laut.max=255 laut.defl=100
         //% pwm1.shadow="speedPicker" pwm1.defl=80
         //% pwm2.shadow="speedPicker" pwm2.defl=80
         seite4StopandGo(pwm1: number, pwm2: number) {
@@ -537,6 +538,36 @@ namespace calli2bot {
             } */
             this.qLog = [this.qMotoran.toString()]
 
+        }
+
+        // ========== 
+
+        //% group="9 Linienfolger" subcategory=Beispiele
+        //% block="Linienfolger %Calli2bot fahren %pwm1 \\% • drehen %pwm2 \\% • stop %stop cm" weight=2
+        //% pwm1.shadow="speedPicker" pwm1.defl=100
+        //% pwm2.shadow="speedPicker" pwm2.defl=50
+        //% stop.min=0 stop.max=50 stop.defl=10
+        seite9Linienfolger(pwm1: number, pwm2: number, stop: number) {
+            this.i2cReadINPUT_US()
+            if (this.bitINPUT_US(eVergleich.lt, stop)) {
+                this.setMotoren2(0, 0)
+                return false
+            } else {
+                this.i2cReadINPUTS()
+                if (this.bitINPUTS(calli2bot.eINPUTS.sp0)) {
+                    this.setMotoren2(pwm1, pwm1) // dunkel,dunkel
+                    this.setLed1(eLed.redb, false) // beide rote LED aus
+                } else if (this.bitINPUTS(calli2bot.eINPUTS.sp1)) {
+                    this.setMotoren2(0, pwm2)
+                    this.setLed1(eLed.redl, true)
+                    this.setLed1(eLed.redr, false)
+                } else {
+                    this.setMotoren2(pwm2, 0)
+                    this.setLed1(eLed.redl, false)
+                    this.setLed1(eLed.redr, true)
+                }
+                return true
+            }
         }
 
 
