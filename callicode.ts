@@ -2,7 +2,7 @@ namespace calli2bot {
     //export  class Calli2bot {
 
 
-    //% group="Seite2Motor" subcategory=Codekarten
+ /*    //% group="Seite2Motor" subcategory=Codekarten
     //% block="Motoren %pCalli2bot Pause %sekunden" weight=8
     //% sekunden.shadow=calli2bot_ePause
     export function seite2Motor(pCalli2bot: Calli2bot, sekunden: number) {
@@ -11,7 +11,7 @@ namespace calli2bot {
         pCalli2bot.setMotoren2(-50, 50)
         pause(sekunden)
         pCalli2bot.setMotoren2(0, 0)
-    }
+    } */
     //}
     /*     
     function Seite5fahren50cm() {

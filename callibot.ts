@@ -189,8 +189,33 @@ PWM rechts (0..255) von Motor 2
             black = 0x000000
         } */
 
+    let nLautMax = 0
+    let nLautCount = 0
 
+    //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
+    //% block="(dauerhaft) Lautstärke > %soundLevel" weight=5
+    //% soundLevel.min=0 soundLevel.max=255 soundLevel.defl=30
+    //% blockSetVariable=lText
+    export function lautMessung(soundLevel: number) {
+        let laut = input.soundLevel()
+        if (laut > soundLevel) {
+            nLautMax = laut
+            nLautCount += 1
+            pause(5) // 0,5 Sekunden nur nach Ereignis
+        }
+        return format4r(laut) + format4r(nLautMax) + format4r(soundLevel) + format4r(nLautCount)
+    }
 
+    //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
+    //% block="es laut war" weight=4
+    export function lautTest() {
+        if (nLautCount > 0) {
+            nLautMax = 0
+            nLautCount = 0
+            return true
+        } else
+            return false
+    }
 
 
     // ========== private

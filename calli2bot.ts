@@ -1,6 +1,7 @@
 
 namespace calli2bot {
     export class Calli2bot {
+        private readonly qSimulator: boolean
         private readonly i2cADDR: eADDR
         private readonly i2cCheck: boolean // i2c-Check
         private i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
@@ -14,10 +15,17 @@ namespace calli2bot {
         private input_Spursensoren: number[]
 
         constructor(pADDR: eADDR, ck: boolean) {
-            this.i2cADDR = pADDR
-            this.i2cCheck = ck
-            this.i2cError = 0 // Reset Fehlercode
-            this.i2cRESET_OUTPUTS()
+            //basic.showNumber("€".charCodeAt(0))
+            this.qSimulator = ("€".charCodeAt(0) == 8364)
+            if (this.qSimulator)
+                this.i2cCheck = false // Simulator
+            else {
+                this.i2cADDR = pADDR
+                this.i2cCheck = ck
+                this.i2cError = 0 // Reset Fehlercode
+
+                this.i2cRESET_OUTPUTS()
+            }
         }
 
 
@@ -484,25 +492,41 @@ namespace calli2bot {
 
 
 
-        // ========== subcategory=Codekarten
+        // ========== subcategory=Beispiele
+
+
+        //% group="2 fahren und drehen" subcategory=Beispiele
+        //% block="Motoren %Calli2bot (1/10s) fahren %zsf drehen %zsd nach %rl" weight=8
+        //% zsf.min=0 zsf.max=100 zsf.defl=50
+        //% zsd.min=0 zsd.max=100 zsd.defl=20
+        seite2Motor(zsf: number, zsd: number, rl: eRL) {
+            this.setMotoren2(100, 100)
+            pause(zsf)
+            if (rl == eRL.links) this.setMotoren2(-50, 50)
+            else this.setMotoren2(50, -50)
+            pause(zsd)
+            this.setMotoren2(0, 0)
+        }
+
+
 
         // ========== 
-        //% group="Seite 4 Stop and Go (klatschen)" subcategory=Codekarten
-        //% block="Stop and Go %Calli2bot Lautstärke %laut Motoren l %pwm1 \\% r %pwm2 \\%"
+        //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
+        //% block="Stop and Go %Calli2bot Motoren l %pwm1 \\% r %pwm2 \\%" weight=2
         //% laut.min=0 laut.max=255 laut.defl=100
         //% pwm1.shadow="speedPicker" pwm1.defl=80
         //% pwm2.shadow="speedPicker" pwm2.defl=80
-        seite4StopandGo(laut: number, pwm1: number, pwm2: number) {
-            /* if (input.soundLevel() > laut) {
+        seite4StopandGo(pwm1: number, pwm2: number) {
+            if (lautTest()) {
                 this.qMotoran = !(this.qMotoran)
                 // nur bei Änderung an i2c senden
                 if (this.qMotoran)
                     this.setMotoren2(pwm1, pwm2)
                 else
                     this.setMotoren2(0, 0)
-            } */
+            }
             //let laut = input.soundLevel()
-            if (input.soundLevel() < laut) {
+            /* if (!lautTest()) {
                 if (this.qMotoran) {
                     this.setMotoren2(pwm1, pwm2)
                 }
@@ -510,8 +534,8 @@ namespace calli2bot {
                 //lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 10, 14, laut, lcd16x2rgb.eAlign.right)
                 this.qMotoran = !(this.qMotoran)
                 this.setMotoren2(0, 0)
-            }
-            this.qLog = [this.qMotoran.toString().substr(0, 1)]
+            } */
+            this.qLog = [this.qMotoran.toString()]
 
         }
 
@@ -522,6 +546,7 @@ namespace calli2bot {
         private i2cWriteBuffer(buf: Buffer) { // repeat funktioniert nicht
             if (this.i2cError == 0) { // vorher kein Fehler
                 this.i2cError = pins.i2cWriteBuffer(this.i2cADDR, buf)
+                // NaN im Simulator
                 if (this.i2cCheck && this.i2cError != 0)  // vorher kein Fehler, wenn (n_i2cCheck=true): beim 1. Fehler anzeigen
                     basic.showString(Buffer.fromArray([this.i2cADDR]).toHex()) // zeige fehlerhafte i2c-Adresse als HEX
             } else if (!this.i2cCheck)  // vorher Fehler, aber ignorieren (n_i2cCheck=false): i2c weiter versuchen
