@@ -1,7 +1,7 @@
 
 namespace calli2bot {
     export class Calli2bot {
-        private readonly qSimulator: boolean
+        private readonly qSimulator: boolean = ("€".charCodeAt(0) == 8364)
         private readonly i2cADDR: eADDR
         private readonly i2cCheck: boolean // i2c-Check
         private i2cError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
@@ -16,7 +16,7 @@ namespace calli2bot {
 
         constructor(pADDR: eADDR, ck: boolean) {
             //basic.showNumber("€".charCodeAt(0))
-            this.qSimulator = ("€".charCodeAt(0) == 8364)
+            //this.qSimulator = ("€".charCodeAt(0) == 8364)
             if (this.qSimulator)
                 this.i2cCheck = false // Simulator
             else {
@@ -357,8 +357,9 @@ namespace calli2bot {
         // ========== group="Fernsteuerung Motor (0 .. 128 .. 255) fahren und lenken"
 
         //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="Fernsteuerung"
-        //% block="fahre mit Joystick %Calli2bot receivedNumber: %pUInt32LE" weight=6
-        fahreJoystick(pUInt32LE: number) {
+        //% block="fahre mit Joystick %Calli2bot receivedNumber: %pUInt32LE || blinken %blink log %pLog" weight=6
+        //% blink.shadow="toggleYesNo" pLog.shadow="toggleYesNo"
+        fahreJoystick(pUInt32LE: number, blink = true, pLog = false) {
             let joyBuffer32 = Buffer.create(4)
             joyBuffer32.setNumber(NumberFormat.UInt32LE, 0, pUInt32LE)
 
@@ -370,8 +371,8 @@ namespace calli2bot {
             let joyVertical = joyBuffer32.getUint8(1)
             if (0x7C < joyVertical && joyVertical < 0x83) joyVertical = 0x80 // off at the outputs
 
-            // Buffer[2] Register 7: Current Button Position (0:gedrückt)
-            // joyBuffer32.getUint8(2) wird nicht ausgewertet
+            // Buffer[2] 
+            let joyProzent = joyBuffer32.getUint8(2) // (0 .. 100)
 
             // Buffer[3] Register 8: Button STATUS (1:war gedrückt)
             //let joyButton = joyBuffer32.getUint8(3) == 0 ? false : true
@@ -393,8 +394,20 @@ namespace calli2bot {
             let fahren_Richtung: eDirection = (fahren_minus255_0_255 < 0 ? eDirection.r : eDirection.v)
 
             let fahren_0_255 = Math.abs(fahren_minus255_0_255)
+
+            // max Geschwindigkeit wenn Buffer[2] (10 .. 100)
+            if (between(joyProzent, 1, 8)) {
+                fahren_0_255 *= (joyProzent + 1) / 10 // (0,2 .. 0.9)
+            }
+
             let fahren_links = fahren_0_255
             let fahren_rechts = fahren_0_255
+
+            // max Geschwindigkeit wenn Buffer[2] (10 .. 100)
+            //if (between(joyProzent, 10, 100)) {
+            //    fahren_links *= joyProzent / 100 // (0,1 .. 1,0)
+            //    fahren_rechts *= joyProzent / 100 // (0,1 .. 1,0)
+            //}
 
             // lenken
             let lenken_255_0_255 = sign(joyVertical)
@@ -409,18 +422,24 @@ namespace calli2bot {
             if (this.qMotorPower)
                 this.setMotoren(fahren_links, fahren_Richtung, fahren_rechts, fahren_Richtung)
 
-            this.qLog = ["", ""]
-            this.qLog[0] = format4r(joyHorizontal)
-                + format4r(fahren_minus255_0_255)
-                + format4r(fahren_links)
-                + format4r(fahren_rechts)
-            this.qLog[1] = format4r(joyVertical)
-                + format4r(lenken_255_0_255)
-                + format4r(lenken_100_50)
-                + " " + fahren_Richtung.toString().substr(0, 1)
-                + " " + this.qMotorPower.toString().substr(0, 1)
-            //+ " " + format(fahren_Richtung, 1)
-            //+ " " + format(this.motorPower, 1)
+            if (blink) {
+                this.setRgbLed3(0x0000FF, true, true, true, true, true)
+            }
+
+            if (pLog) {
+                this.qLog = ["", ""]
+                this.qLog[0] = format4r(joyHorizontal)
+                    + format4r(fahren_minus255_0_255)
+                    + format4r(fahren_links)
+                    + format4r(fahren_rechts)
+                this.qLog[1] = format4r(joyVertical)
+                    + format4r(lenken_255_0_255)
+                    + format4r(lenken_100_50)
+                    + " " + fahren_Richtung.toString().substr(0, 1)
+                    + " " + this.qMotorPower.toString().substr(0, 1)
+                //+ " " + format(fahren_Richtung, 1)
+                //+ " " + format(this.motorPower, 1)
+            }
 
         }
 
