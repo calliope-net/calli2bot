@@ -1,9 +1,9 @@
 
-//% color=#007F00 icon="\uf17b" block="Calli²bot" weight=28
+//% color=#007F00 icon="\uf188" block="Calli²bot" weight=28
 //% groups='["beim Start","Motor (-100% .. 0 .. +100%)","LED","INPUT"]'
 namespace calli2bot
 /* 231030 calliope-net.github.io/callibot
-
+    icon="\uf17b" android
 Quellen:
 https://github.com/knotechgmbh
 https://github.com/MKleinSB/pxt-callibot

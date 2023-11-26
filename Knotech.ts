@@ -102,7 +102,7 @@ enum C2Check {
 
 
 
-//% weight=29 color="#FF0000" icon="\uf013" block="Calli:bot 2"
+//% weight=29 color="#FF0000" icon="\uf013" block="Calli:bot 2E"
 namespace calliBot2 {
 
     export let c2Initialized = 0;
