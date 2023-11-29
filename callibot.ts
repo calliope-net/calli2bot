@@ -46,12 +46,13 @@ PWM rechts (0..255) von Motor 2
     // ========== group="beim Start"
 
     //% group="beim Start"
-    //% block="i2c %pADDR beim Start || i2c-Check %ck"
+    //% block="i2c %pADDR beim Start || i2c-Check %ck Log %pLogEnabled"
     //% pADDR.shadow="calli2bot_eADDR"
     //% ck.shadow="toggleOnOff" ck.defl=1
+    //% pLogEnabled.shadow="toggleOnOff"
     //% blockSetVariable=Calli2bot
-    export function beimStart(pADDR: number, ck?: boolean): Calli2bot {
-        let c2 = new Calli2bot(pADDR, (ck ? true : false)) // optionaler boolean Parameter kann undefined sein
+    export function beimStart(pADDR: number, ck = true, pLogEnabled = false): Calli2bot {
+        let c2 = new Calli2bot(pADDR, (ck ? true : false), pLogEnabled) // optionaler boolean Parameter kann undefined sein
         calliBot2.c2Initialized = 1
         calliBot2.c2IsBot2 = 1
         return c2
@@ -141,19 +142,23 @@ PWM rechts (0..255) von Motor 2
         //% block="Spursucher dunkel"
         sp0, //= 0b00000000,
         //% block="Spursucher rechts"
-        sp1, //= 0b00000001,
+        sp1r, //= 0b00000001,
         //% block="Spursucher links"
-        sp2, //= 0b00000010,
+        sp2l, //= 0b00000010,
         //% block="Spursucher beide"
-        sp3, //= 0b00000011,
+        sp3b, //= 0b00000011,
+        //% block="Spursucher egal"
+        sp4e,
         //% block="Stoßstange aus"
         st0, //= 0b00000000,
         //% block="Stoßstange rechts"
-        st1, //= 0b00000100,
+        st1r, //= 0b00000100,
         //% block="Stoßstange links"
-        st2, //= 0b00001000,
+        st2l, //= 0b00001000,
         //% block="Stoßstange beide"
-        st3, //= 0b00001100,
+        st3b, //= 0b00001100,
+        //% block="Stoßstange egal"
+        st4e,
         //% block="ON-Taster"
         ont, //= 0b00010000,
         //% block="OFF-Taster"
