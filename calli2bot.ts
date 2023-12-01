@@ -471,13 +471,13 @@ namespace calli2bot {
 
         }
 
-        //% group="Fernsteuerung (0 .. 128 .. 255) fahren und lenken" subcategory="Fernsteuerung"
-        //% block="%Calli2bot Protokoll lesen [fahren,lenken]" weight=2 deprecated=true
+        //% group="Protokoll lesen" subcategory="Fernsteuerung"
+        //% block="%Calli2bot Log (Array)" weight=3
         getLog(): string[] { return this.qLog }
 
 
-        //% group="Protokoll lesen [fahren,lenken]" subcategory="Fernsteuerung"
-        //% block="%Calli2bot Protokoll Zeile %1" weight=2
+        //% group="Protokoll lesen" subcategory="Fernsteuerung"
+        //% block="%Calli2bot Log Zeile %index" weight=2
         //% index.min=0 index.max=1
         getLog2(index: number): string {
             if (this.qLog != undefined && index < this.qLog.length && index >= 0)
@@ -551,74 +551,105 @@ namespace calli2bot {
         seite2Motor(sf: number, sd: number, rl: eRL) {
             this.setMotoren2(100, 100)
 
-            pausesekunden(sf)
+            pauseSekunden(sf)
             if (rl == eRL.links) this.setMotoren2(-50, 50)
             else this.setMotoren2(50, -50)
-            pausesekunden(sd)
+            pauseSekunden(sd)
             this.setMotoren2(0, 0)
         }
 
 
         // ========== group="4 Lautstärke, Stop and Go" subcategory=Beispiele
 
-
-        private qLautMax = 0
-        private qLautCount = 0
+        /* 
+                private qLautMax = 0
+                private qLautCount = 0
+        
+                //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
+                //% block="(dauerhaft) %Calli2bot Lautstärke > %soundLevel" weight=5
+                //% soundLevel.min=0 soundLevel.max=255 soundLevel.defl=30
+                lautMessung(soundLevel: number) {
+                    let laut = input.soundLevel()
+                    if (laut > soundLevel) {
+                        this.qLautMax = laut
+                        this.qLautCount += 1
+                        pausesekunden(0.5) // 0,5 Sekunden nur nach Ereignis
+                    }
+                    if (this.qLogEnabled) {
+                        this.qLog = ["", ""] // init Array 2 Elemente
+                        this.qLog[0] = format4r(laut) + format4r(this.qLautMax)
+                        this.qLog[1] = format4r(soundLevel) + format4r(this.qLautCount)
+                    }
+                }
+        
+                //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
+                //% block="%Calli2bot es laut war" weight=4
+                lautTest() {
+                    if (this.qLautCount > 0) {
+                        this.qLautMax = 0
+                        this.qLautCount = 0
+                        return true
+                    } else
+                        return false
+                }
+        
+                //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
+                //% block="Stop and Go %Calli2bot Motoren l %pwm1 \\% r %pwm2 \\%" weight=2
+                //% pwm1.shadow="speedPicker" pwm1.defl=80
+                //% pwm2.shadow="speedPicker" pwm2.defl=80
+                seite4StopandGo(pwm1: number, pwm2: number) {
+                    if (this.lautTest()) {
+                        this.qStopandGoMotoran = !(this.qStopandGoMotoran)
+                        // nur bei Änderung an i2c senden
+                        if (this.qStopandGoMotoran)
+                            this.setMotoren2(pwm1, pwm2)
+                        else
+                            this.setMotoren2(0, 0)
+                    }
+                    //let laut = input.soundLevel()
+                   
+                    if (this.qLogEnabled) this.qLog = [this.qStopandGoMotoran.toString()] // init Array
+        
+                }
+                  //% block="Pause %sekunden" weight=1
+            //% sekunden.shadow=calli2bot_ePause
+         */
 
         //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
-        //% block="(dauerhaft) %Calli2bot Lautstärke > %soundLevel" weight=5
-        //% soundLevel.min=0 soundLevel.max=255 soundLevel.defl=30
-        lautMessung(soundLevel: number) {
-            let laut = input.soundLevel()
-            if (laut > soundLevel) {
-                this.qLautMax = laut
-                this.qLautCount += 1
-                pausesekunden(0.5) // 0,5 Sekunden nur nach Ereignis
-            }
-            if (this.qLogEnabled) {
-                this.qLog = ["", ""] // init Array 2 Elemente
-                this.qLog[0] = format4r(laut) + format4r(this.qLautMax)
-                this.qLog[1] = format4r(soundLevel) + format4r(this.qLautCount)
-            }
-        }
-
-        //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
-        //% block="%Calli2bot es laut war" weight=4
-        lautTest() {
-            if (this.qLautCount > 0) {
-                this.qLautMax = 0
-                this.qLautCount = 0
-                return true
-            } else
-                return false
-        }
-
-        //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
-        //% block="Stop and Go %Calli2bot Motoren l %pwm1 \\% r %pwm2 \\% Lautstärke > %soundLevel" weight=2
+        //% block="Stop and Go %Calli2bot Motoren l %pwm1 \\% r %pwm2 \\% Lautstärke > %soundLevel || Pause %sekunden" weight=1
         //% pwm1.shadow="speedPicker" pwm1.defl=80
-        //% pwm2.shadow="speedPicker" pwm2.defl=80
-        seite4StopandGo(pwm1: number, pwm2: number, soundLevel: number) {
-            if (this.lautTest()) {
+        //% pwm2.shadow="speedPicker" pwm2.defl=-80
+        //% soundLevel.min=0 soundLevel.max=255 soundLevel.defl=30
+        //% sekunden.shadow=calli2bot_ePause
+        //% inlineInputMode=inline
+        seite4StopandGoL(pwm1: number, pwm2: number, soundLevel: number, sekunden: number = 1) {
+            let laut = input.soundLevel()
+
+            if (this.initLog(2)) {
+                //this.qLog = ["", ""] // init Array 2 Elemente
+                this.qLog[0] = format4r(soundLevel) + format4r(laut)
+                //this.qLog[1] = (this.qStopandGoMotoran ? "Go" : "Stop")
+            }
+
+            if (laut > soundLevel) {
                 this.qStopandGoMotoran = !(this.qStopandGoMotoran)
+
                 // nur bei Änderung an i2c senden
                 if (this.qStopandGoMotoran)
                     this.setMotoren2(pwm1, pwm2)
                 else
                     this.setMotoren2(0, 0)
+
+                if (this.initLog(2))
+                    this.qLog[1] = (this.qStopandGoMotoran ? "  Go" : "Stop") + format4r(laut)
+
+                pauseSekunden(sekunden) // Sekunden nur nach Ereignis
             }
-            //let laut = input.soundLevel()
-            /* if (!lautTest()) {
-                if (this.qMotoran) {
-                    this.setMotoren2(pwm1, pwm2)
-                }
-            } else {
-                //lcd16x2rgb.writeText(lcd16x2rgb.lcd16x2_eADDR(lcd16x2rgb.eADDR_LCD.LCD_16x2_x3E), 0, 10, 14, laut, lcd16x2rgb.eAlign.right)
-                this.qMotoran = !(this.qMotoran)
-                this.setMotoren2(0, 0)
-            } */
-            if (this.qLogEnabled) this.qLog = [this.qStopandGoMotoran.toString()] // init Array
+
+
 
         }
+
 
         // ========== 
 
@@ -653,6 +684,31 @@ namespace calli2bot {
 
 
         // ========== private
+
+
+        private initLog(length: number) {
+            if (!this.qLogEnabled)
+                return false
+            else if (this.qLog != undefined && this.qLog.length == length)
+                return true
+            else //if (this.qLog == undefined || this.qLog.length != length) 
+            {
+                this.qLog = []
+                for (let i = 0; i < length; i++)
+                    this.qLog.push("") // Anzahl Elemente hinzu fügen
+                return true
+            }
+            /*  else if (this.qLog.length != length) {
+                 this.qLog = []
+                 for (let i = 0; i < length; i++) {
+                     this.qLog.push("")
+                 }
+                 return true
+             } */
+            //else return true
+
+        }
+
 
         private i2cWriteBuffer(buf: Buffer) { // repeat funktioniert nicht
             if (this.i2cError == 0) { // vorher kein Fehler

@@ -62,7 +62,7 @@ PWM rechts (0..255) von Motor 2
     //% group="Motor (-100% .. 0 .. +100%)"
     //% block="Pause %sekunden" weight=1
     //% sekunden.shadow=calli2bot_ePause
-    export function pausesekunden(sekunden: number) {
+    export function pauseSekunden(sekunden: number) {
         control.waitMicros(sekunden * 1000000)
     }
 
@@ -193,7 +193,7 @@ PWM rechts (0..255) von Motor 2
             white = 0xffffff,
             black = 0x000000
         } */
-
+/* 
     let nLautMax = 0
     let nLautCount = 0
 
@@ -221,7 +221,7 @@ PWM rechts (0..255) von Motor 2
         } else
             return false
     }
-
+ */
 
     // ========== private
 
