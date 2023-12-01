@@ -594,11 +594,11 @@ namespace calli2bot {
         }
 
         //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
-        //% block="Stop and Go %Calli2bot Motoren l %pwm1 \\% r %pwm2 \\%" weight=2
+        //% block="Stop and Go %Calli2bot Motoren l %pwm1 \\% r %pwm2 \\% Lautstärke > %soundLevel" weight=2
         //% pwm1.shadow="speedPicker" pwm1.defl=80
         //% pwm2.shadow="speedPicker" pwm2.defl=80
-        seite4StopandGo(pwm1: number, pwm2: number) {
-            if (lautTest()) {
+        seite4StopandGo(pwm1: number, pwm2: number, soundLevel: number) {
+            if (this.lautTest()) {
                 this.qStopandGoMotoran = !(this.qStopandGoMotoran)
                 // nur bei Änderung an i2c senden
                 if (this.qStopandGoMotoran)
