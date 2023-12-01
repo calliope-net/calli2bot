@@ -62,8 +62,8 @@ PWM rechts (0..255) von Motor 2
     //% group="Motor (-100% .. 0 .. +100%)"
     //% block="Pause %sekunden" weight=1
     //% sekunden.shadow=calli2bot_ePause
-    export function pause(zehntelsekunden: number) {
-        control.waitMicros(zehntelsekunden * 100000)
+    export function pause_(sekunden: number) {
+        control.waitMicros(sekunden * 1000000)
     }
 
     export enum ePause {
@@ -89,7 +89,7 @@ PWM rechts (0..255) von Motor 2
         p60 = 600
     }
     //% blockId=calli2bot_ePause block="%pPause" blockHidden=true
-    export function calli2bot_ePause(pPause: ePause): number { return pPause }
+    export function calli2bot_ePause_(pPause: ePause): number { return pPause / 10 }
 
 
     export enum eMotor {
@@ -198,7 +198,7 @@ PWM rechts (0..255) von Motor 2
     let nLautCount = 0
 
     //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
-    //% block="(dauerhaft) Lautstärke > %soundLevel" weight=5
+    //% block="(dauerhaft) Lautstärke > %soundLevel" weight=5 deprecated=true
     //% soundLevel.min=0 soundLevel.max=255 soundLevel.defl=30
     //% blockSetVariable=lText
     export function lautMessung(soundLevel: number) {
@@ -212,7 +212,7 @@ PWM rechts (0..255) von Motor 2
     }
 
     //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
-    //% block="es laut war" weight=4
+    //% block="es laut war" weight=4 deprecated=true
     export function lautTest() {
         if (nLautCount > 0) {
             nLautMax = 0

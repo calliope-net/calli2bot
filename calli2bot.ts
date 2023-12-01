@@ -548,23 +548,55 @@ namespace calli2bot {
 
         // ========== subcategory=Beispiele
 
-        // ========== group="2 fahren und drehen" subcategory=Beispiele
+        // ========== group="2 fahren und drehen" subcategory=Beispiele ⅒s • 
 
         //% group="2 fahren und drehen" subcategory=Beispiele
-        //% block="Motoren %Calli2bot fahren %zsf ⅒s • drehen %zsd ⅒s • nach %rl" weight=8
-        //% zsf.min=0 zsf.max=100 zsf.defl=50
-        //% zsd.min=0 zsd.max=100 zsd.defl=20
-        seite2Motor(zsf: number, zsd: number, rl: eRL) {
+        //% block="Motoren %Calli2bot fahren %zsf s • drehen %zsd s • nach %rl" weight=8
+        // sf.min=0 sf.max=10 sf.defl=5
+        // sd.min=0 sd.max=10 sd.defl=2.5
+        seite2Motor(sf: number, sd: number, rl: eRL) {
             this.setMotoren2(100, 100)
-            pause(zsf)
+            pause(sf)
             if (rl == eRL.links) this.setMotoren2(-50, 50)
             else this.setMotoren2(50, -50)
-            pause(zsd)
+            pause(sd)
             this.setMotoren2(0, 0)
         }
 
 
         // ========== group="4 Lautstärke, Stop and Go" subcategory=Beispiele
+
+
+        private qLautMax = 0
+        private qLautCount = 0
+
+        //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
+        //% block="(dauerhaft) %Calli2bot Lautstärke > %soundLevel" weight=5
+        //% soundLevel.min=0 soundLevel.max=255 soundLevel.defl=30
+        lautMessung(soundLevel: number) {
+            let laut = input.soundLevel()
+            if (laut > soundLevel) {
+                this.qLautMax = laut
+                this.qLautCount += 1
+              pause(0.5) // 0,5 Sekunden nur nach Ereignis
+            }
+            if (this.qLogEnabled) {
+                this.qLog = ["", ""] // init Array 2 Elemente
+                this.qLog[0] = format4r(laut) + format4r(this.qLautMax)
+                this.qLog[1] = format4r(soundLevel) + format4r(this.qLautCount)
+            }
+        }
+
+        //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
+        //% block="%Calli2bot es laut war" weight=4
+        lautTest() {
+            if (this.qLautCount > 0) {
+                this.qLautMax = 0
+                this.qLautCount = 0
+                return true
+            } else
+                return false
+        }
 
         //% group="4 Lautstärke, Stop and Go" subcategory=Beispiele
         //% block="Stop and Go %Calli2bot Motoren l %pwm1 \\% r %pwm2 \\%" weight=2
