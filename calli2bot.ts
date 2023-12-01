@@ -63,10 +63,10 @@ namespace calli2bot {
             let pRichtung = (pwm < 0 ? eDirection.r : eDirection.v)
             pwm = Math.trunc(Math.abs(pwm) * 255 / 100)
 
-            if (between(pwm, 0, 255)) {
-                //this.motorPower = true
-            } else  // falscher Parameter -> beide Stop
-                pMotor = eMotor.beide; pwm = 0
+            if (!between(pwm, 0, 255)) { // falscher Parameter -> beide Stop
+                pMotor = eMotor.beide
+                pwm = 0
+            }
 
             if (pMotor == eMotor.beide)
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, pMotor, pRichtung, pwm, pRichtung, pwm]))
@@ -356,7 +356,7 @@ namespace calli2bot {
         setMotoren(pwm1: number, pRichtung1: eDirection, pwm2: number, pRichtung2: eDirection) {
             if (between(pwm1, 0, 255) && between(pwm2, 0, 255))
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, pRichtung1, pwm1, pRichtung2, pwm2]))
-            else
+            else // falscher Parameter -> beide Stop
                 this.i2cWriteBuffer(Buffer.fromArray([eRegister.SET_MOTOR, eMotor.beide, 0, 0, 0, 0]))
         }
 
