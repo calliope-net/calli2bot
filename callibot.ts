@@ -62,7 +62,7 @@ PWM rechts (0..255) von Motor 2
     //% group="Motor (-100% .. 0 .. +100%)"
     //% block="Pause %sekunden" weight=1
     //% sekunden.shadow=calli2bot_ePause
-    export function pause_(sekunden: number) {
+    export function pausesekunden(sekunden: number) {
         control.waitMicros(sekunden * 1000000)
     }
 
@@ -89,7 +89,7 @@ PWM rechts (0..255) von Motor 2
         p60 = 600
     }
     //% blockId=calli2bot_ePause block="%pPause" blockHidden=true
-    export function calli2bot_ePause_(pPause: ePause): number { return pPause / 10 }
+    export function calli2bot_ePause(pPause: ePause): number { return pPause / 10 }
 
 
     export enum eMotor {
@@ -206,7 +206,7 @@ PWM rechts (0..255) von Motor 2
         if (laut > soundLevel) {
             nLautMax = laut
             nLautCount += 1
-            pause(5) // 0,5 Sekunden nur nach Ereignis
+            pause(0.5) // 0,5 Sekunden nur nach Ereignis
         }
         return format4r(laut) + format4r(nLautMax) + format4r(soundLevel) + format4r(nLautCount)
     }

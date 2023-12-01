@@ -99,12 +99,6 @@ namespace calli2bot {
             if (lh) this.setRgbLed31(eRgbLed.LH, buffer, blink)
             if (rh) this.setRgbLed31(eRgbLed.RH, buffer, blink)
             if (rv) this.setRgbLed31(eRgbLed.RV, buffer, blink)
-
-            //if (lv) { buffer[1] = eRgbLed.LV; this.i2cWriteBuffer(buffer); basic.pause(10) }
-            //if (lh) { buffer[1] = eRgbLed.LH; this.i2cWriteBuffer(buffer); basic.pause(10) }
-            //if (rh) { buffer[1] = eRgbLed.RH; this.i2cWriteBuffer(buffer); basic.pause(10) }
-            //if (rv) { buffer[1] = eRgbLed.RV; this.i2cWriteBuffer(buffer); basic.pause(10) }
-
         }
 
         // blinken
@@ -114,7 +108,7 @@ namespace calli2bot {
             this.qLEDs[pRgbLed] = buffer.getNumber(NumberFormat.UInt32BE, 1)
             buffer[1] = pRgbLed // Led-Index 1,2,3,4 für RGB
             this.i2cWriteBuffer(buffer)
-            basic.pause(10)
+            basic.pause(10) // ms
         }
 
         //% group="LED" deprecated=true
@@ -134,7 +128,7 @@ namespace calli2bot {
                 for (let i = 1; i < 5; i++) {
                     buffer[1] = i
                     this.i2cWriteBuffer(buffer)
-                    basic.pause(10)
+                    basic.pause(10) // ms
                 }
         }
 
@@ -551,15 +545,16 @@ namespace calli2bot {
         // ========== group="2 fahren und drehen" subcategory=Beispiele ⅒s • 
 
         //% group="2 fahren und drehen" subcategory=Beispiele
-        //% block="Motoren %Calli2bot fahren %zsf s • drehen %zsd s • nach %rl" weight=8
+        //% block="Motoren %Calli2bot fahren %sf s • drehen %sd s • nach %rl" weight=8
         // sf.min=0 sf.max=10 sf.defl=5
         // sd.min=0 sd.max=10 sd.defl=2.5
         seite2Motor(sf: number, sd: number, rl: eRL) {
             this.setMotoren2(100, 100)
-            pause(sf)
+
+            pausesekunden(sf)
             if (rl == eRL.links) this.setMotoren2(-50, 50)
             else this.setMotoren2(50, -50)
-            pause(sd)
+            pausesekunden(sd)
             this.setMotoren2(0, 0)
         }
 
@@ -578,7 +573,7 @@ namespace calli2bot {
             if (laut > soundLevel) {
                 this.qLautMax = laut
                 this.qLautCount += 1
-              pause(0.5) // 0,5 Sekunden nur nach Ereignis
+                pausesekunden(0.5) // 0,5 Sekunden nur nach Ereignis
             }
             if (this.qLogEnabled) {
                 this.qLog = ["", ""] // init Array 2 Elemente
