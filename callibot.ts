@@ -1,6 +1,6 @@
 
 //% color=#007F00 icon="\uf188" block="Calli²bot" weight=28
-//% groups='["beim Start","Motor (-100% .. 0 .. +100%)","LED","INPUT"]'
+//% groups='["beim Start","Motor (-100% .. 0 .. +100%)","LED","Reset","Kommentar"]'
 namespace calli2bot
 /* 231030 calliope-net.github.io/callibot
     icon="\uf17b" android
@@ -96,6 +96,11 @@ PWM rechts (0..255) von Motor 2
     }
     //% blockId=calli2bot_ePause block="%pPause" blockHidden=true
     export function calli2bot_ePause(pPause: ePause): number { return pPause / 10 }
+
+
+    //% group="Kommentar"
+    //% block="// %text"
+    export function comment(text: string): void { }
 
 
     export enum eMotor {
