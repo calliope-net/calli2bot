@@ -194,10 +194,20 @@ namespace calli2bot {
         // ========== group="INPUT digital" subcategory="Sensoren"
 
         //% group="INPUT digital" subcategory="Sensoren"
-        //% block="neu einlesen %Calli2bot Digitaleingänge" weight=8
-        i2cReadINPUTS() {
-            this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_INPUTS]))
-            this.input_Digital = this.i2cReadBuffer(1).getUint8(0)
+        //% block="neu einlesen %Calli2bot Digitaleingänge || %i2" weight=8
+        //% i2.defl=0
+        i2cReadINPUTS(i2 = 0) {
+            switch (i2) {
+                case 0:
+                    this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_INPUTS]))
+                    this.input_Digital = this.i2cReadBuffer(1).getUint8(0)
+                case 1:
+                    this.input_Digital = this.i2cReadBuffer(1).getUint8(0)
+                case 2:
+                    this.input_Digital = pins.i2cReadBuffer(0x22, 1).getUint8(0)
+                case 3:
+                    this.input_Digital = pins.i2cReadBuffer(0x21, 1).getUint8(0)
+            }
         }
 
         //% group="INPUT digital" subcategory="Sensoren"
