@@ -208,7 +208,7 @@ namespace calli2bot {
                     switch (status) {
                         case eSensorStatus.hell: return (this.input_Digital & 0b00000001) != 0
                         case eSensorStatus.dunkel: return (this.input_Digital & 0b00000001) == 0
-                        }
+                    }
                 case eSensor.links:
                     switch (status) {
                         case eSensorStatus.hell: return (this.input_Digital & 0b00000010) != 0
@@ -250,9 +250,79 @@ namespace calli2bot {
                          */
         }
 
+        //% group="INPUT digital" subcategory="Sensoren"
+        //% block="%Calli2bot Stoßstange %sensor %status" weight=6
+        readBumperSensor(sensor: eSensor, status: eState): boolean {
+            switch (sensor) {
+                case eSensor.rechts:
+                    switch (status) {
+                        case eState.an: return (this.input_Digital & 0b00000100) != 0
+                        case eState.aus: return (this.input_Digital & 0b00000100) == 0
+                    }
+                case eSensor.links:
+                    switch (status) {
+                        case eState.an: return (this.input_Digital & 0b00001000) != 0
+                        case eState.aus: return (this.input_Digital & 0b000001000) == 0
+                    }
+                default:
+                    return false
+            }
+            /* 
+                        let result = false
+                        let buffer = pins.i2cReadBuffer(0x21, 1);
+            
+                        if (sensor == C2Sensor.links) {
+                            buffer[0] &= 0x08
+                        }
+                        if (sensor == C2Sensor.rechts) {
+                            buffer[0] &= 0x04
+                        }
+            
+                        switch (status) {
+                            case C2State.an:
+                                if (buffer[0] != 0) {
+                                    result = true
+                                }
+                                else {
+                                    result = false
+                                }
+                                break
+                            case C2State.aus:
+                                if (buffer[0] == 0) {
+                                    result = true
+                                }
+                                else {
+                                    result = false
+                                }
+                                break
+                        }
+                        return result;
+                         */
+        }
 
         //% group="INPUT digital" subcategory="Sensoren"
-        //% block="%Calli2bot %pINPUTS" weight=6
+        //% block="%Calli2bot %taste" weight=5
+        switchOn(taste: eTasten): boolean {
+            switch (taste) {
+                case eTasten.ont: return (this.input_Digital & 0b00010000) == 0b00010000
+                case eTasten.off: return (this.input_Digital & 0b00100000) == 0b00100000
+                default: return false
+            }
+
+            /* 
+                    let buffer = pins.i2cReadBuffer(0x21, 1);
+                    if (buffer[0] & 0x10) {
+                        return true;
+                    }
+                    else {
+                        return false;
+            
+                    }
+                     */
+        }
+
+        //% group="INPUT digital" subcategory="Sensoren"
+        //% block="%Calli2bot %pINPUTS" weight=3
         bitINPUTS(pINPUTS: eINPUTS): boolean {
             switch (pINPUTS) {
                 case eINPUTS.sp0: return (this.input_Digital & 0b00000011) == 0
@@ -272,7 +342,7 @@ namespace calli2bot {
         }
 
         //% group="INPUT digital" subcategory="Sensoren"
-        //% block="%Calli2bot Digitaleingänge 6 Bit" weight=5
+        //% block="%Calli2bot Digitaleingänge 6 Bit" weight=2
         getINPUTS() { return this.input_Digital }
 
 

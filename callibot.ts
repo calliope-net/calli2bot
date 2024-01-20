@@ -153,6 +153,15 @@ PWM rechts (0..255) von Motor 2
 
     export enum eSensorStatus { hell, dunkel }
 
+    export enum eState { aus, an }
+
+    export enum eTasten{
+        //% block="Ein-Taster"
+        ont,
+        //% block="Aus-Taster"
+        off 
+    }
+
     export enum eINPUTS {
         //% block="Spursucher dunkel" deprecated=true
         sp0, //= 0b00000000,
