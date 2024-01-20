@@ -302,10 +302,10 @@ namespace calli2bot {
 
         //% group="INPUT digital" subcategory="Sensoren"
         //% block="%Calli2bot %taste" weight=5
-        switchOn(taste: eTasten): boolean {
+        switchOn(taste: eTaster): boolean {
             switch (taste) {
-                case eTasten.ont: return (this.input_Digital & 0b00010000) == 0b00010000
-                case eTasten.off: return (this.input_Digital & 0b00100000) == 0b00100000
+                case eTaster.ont: return (this.input_Digital & 0b00010000) == 0b00010000
+                case eTaster.offt: return (this.input_Digital & 0b00100000) == 0b00100000
                 default: return false
             }
 
@@ -322,7 +322,7 @@ namespace calli2bot {
         }
 
         //% group="INPUT digital" subcategory="Sensoren"
-        //% block="%Calli2bot %pINPUTS" weight=3
+        //% block="%Calli2bot %pINPUTS" weight=3 deprecated=true
         bitINPUTS(pINPUTS: eINPUTS): boolean {
             switch (pINPUTS) {
                 case eINPUTS.sp0: return (this.input_Digital & 0b00000011) == 0

@@ -155,11 +155,11 @@ PWM rechts (0..255) von Motor 2
 
     export enum eState { aus, an }
 
-    export enum eTasten{
+    export enum eTaster{
         //% block="Ein-Taster"
         ont,
         //% block="Aus-Taster"
-        off 
+        offt
     }
 
     export enum eINPUTS {
