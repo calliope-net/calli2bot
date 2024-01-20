@@ -194,11 +194,62 @@ namespace calli2bot {
         // ========== group="INPUT digital" subcategory="Sensoren"
 
         //% group="INPUT digital" subcategory="Sensoren"
-        //% block="neu einlesen %Calli2bot Digitaleingänge" weight=7
+        //% block="neu einlesen %Calli2bot Digitaleingänge" weight=8
         i2cReadINPUTS() {
             this.i2cWriteBuffer(Buffer.fromArray([eRegister.GET_INPUTS]))
             this.input_Digital = this.i2cReadBuffer(1).getUint8(0)
         }
+
+        //% group="INPUT digital" subcategory="Sensoren"
+        //% block="%Calli2bot Liniensensor %sensor %status" weight=7
+        readLineSensor(sensor: eSensor, status: eSensorStatus): boolean {
+            switch (sensor) {
+                case eSensor.rechts:
+                    switch (status) {
+                        case eSensorStatus.hell: return (this.input_Digital & 0b00000001) != 0
+                        case eSensorStatus.dunkel: return (this.input_Digital & 0b00000001) == 0
+                        }
+                case eSensor.links:
+                    switch (status) {
+                        case eSensorStatus.hell: return (this.input_Digital & 0b00000010) != 0
+                        case eSensorStatus.dunkel: return (this.input_Digital & 0b000000010) == 0
+                    }
+                default:
+                    return false
+            }
+
+            /* 
+                        let result = false
+                        let buffer = pins.i2cReadBuffer(0x21, 1);
+            
+                        if (sensor == eSensor.links) {
+                            buffer[0] &= 0x02
+                        }
+                        if (sensor == eSensor.rechts) {
+                            buffer[0] &= 0x01
+                        }
+                        switch (status) {
+                            case eSensorStatus.hell:
+                                if (buffer[0] != 0) {
+                                    result = true
+                                }
+                                else {
+                                    result = false
+                                }
+                                break
+                            case eSensorStatus.dunkel:
+                                if (buffer[0] == 0) {
+                                    result = true
+                                }
+                                else {
+                                    result = false
+                                }
+                                break
+                        }
+                        return result
+                         */
+        }
+
 
         //% group="INPUT digital" subcategory="Sensoren"
         //% block="%Calli2bot %pINPUTS" weight=6
