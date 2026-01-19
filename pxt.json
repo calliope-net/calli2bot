@@ -10,9 +10,7 @@
         "main.ts",
         "README.md",
         "callibot.ts",
-        "calli2bot.ts",
-        "Knotech.ts",
-        "callicode.ts"
+        "calli2bot.ts"
     ],
     "testFiles": [
         "test.ts"
@@ -24,5 +22,5 @@
     "supportedTargets": [
         "calliopemini"
     ],
-    "preferredEditor": "tsprj"
+    "preferredEditor": "blocksprj"
 }

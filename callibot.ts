@@ -53,8 +53,8 @@ PWM rechts (0..255) von Motor 2
     //% blockSetVariable=Calli2bot
     export function beimStart(pADDR: number, ck = true, pLogEnabled = false): Calli2bot {
         let c2 = new Calli2bot(pADDR, (ck ? true : false), pLogEnabled) // optionaler boolean Parameter kann undefined sein
-        calliBot2.c2Initialized = 1
-        calliBot2.c2IsBot2 = 1
+        //calliBot2.c2Initialized = 1
+        //calliBot2.c2IsBot2 = 1
         return c2
     }
 
